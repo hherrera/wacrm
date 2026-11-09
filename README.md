@@ -88,7 +88,10 @@ cd wacrm
 npm install
 cp apps/web/.env.local.example apps/web/.env.local   # fill in Supabase + Meta creds
 npm run dev:web          # Next.js UI on :3000
+cp apps/api/.env.example apps/api/.env       # DATABASE_URL + SUPABASE_URL/JWT secret
 npm run dev:api          # Fastify API on :4000 (Conexa)
+npm run dev:worker       # pg-boss worker (queues + cron)
+npm run db:pull -w @conexa/db   # regenerate the Drizzle schema after a migration
 ```
 
 Open <http://localhost:3000>. You'll be redirected to `/login` (or

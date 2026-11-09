@@ -51,3 +51,33 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  api-integration:
+    name: API integration (Postgres)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install the Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 2.113.0 # same pin as migrations.yml
+
+      # Applies every migration on the cold volume.
+      - name: Start Postgres
+        working-directory: packages/db
+        run: supabase db start
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Auth (JWT), RLS via withUser and transactional pg-boss enqueue against the real schema.
+      - name: Test apps/api with a database
+        run: npm test -w @conexa/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

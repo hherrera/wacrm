@@ -1,12 +1,17 @@
 import { buildApp } from './app';
+import { createVerifier } from './auth';
+import { createDb } from './db';
+import { parseEnv } from './env';
 
-const app = buildApp({ logger: true });
-const port = Number(process.env.PORT ?? 4000);
+const env = parseEnv();
+const db = createDb(env.DATABASE_URL);
+const app = await buildApp(
+  { db, verifyToken: createVerifier(env), webOrigin: env.WEB_ORIGIN },
+  { logger: true }
+);
+app.addHook('onClose', () => db.$client.end());
 
-app.listen({ port, host: process.env.HOST ?? '0.0.0.0' }).catch((err) => {
-  app.log.error(err);
-  process.exit(1);
-});
+await app.listen({ port: env.PORT, host: env.HOST });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => void app.close().then(() => process.exit(0)));

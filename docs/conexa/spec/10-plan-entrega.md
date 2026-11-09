@@ -4,7 +4,7 @@
 | Hito | Contenido | Depende de | Demo de cierre |
 |---|---|---|---|
 | **H0.1** Monorepo | Etapa 0.1 + 0.2 ([02](02-fase0-reorganizacion.md)) | — | CI verde, `apps/api /health` y `/docs` |
-| **H0.2** Canales, colas y pipelines | Etapas 0.3 + 0.4 (migraciones 060–064, colas pg-boss según [11](11-colas-y-trabajos.md), ingest/outbound, webhook Meta en api, motores y crons en pg-boss, **bucket privado + URLs firmadas + `media.mirror`** según [12](12-multimedia-transcripciones.md)) | H0.1 | WhatsApp Cloud funcionando igual que wacrm, servido por `apps/api` |
+| **H0.2** Canales, colas y pipelines | Etapas 0.3 + 0.4 (migraciones 061–065, colas pg-boss según [11](11-colas-y-trabajos.md), ingest/outbound, webhook Meta en api, motores y crons en pg-boss, **bucket privado + URLs firmadas + `media.mirror`** según [12](12-multimedia-transcripciones.md)) | H0.1 | WhatsApp Cloud funcionando igual que wacrm, servido por `apps/api` |
 | **H0.3** Frontend desacoplado | Etapa 0.5 (inbox primero) + 0.6 | H0.2 | Cero `.from(` en `apps/web` |
 | **H1** WA Cloud multi-número | [04](04-canal-whatsapp-cloud.md) | H0.2 (puede solaparse con H0.3) | 2 números, 2 WABA |
 | **H2** WAHA | [05](05-canal-waha.md) | H0.2 | QR → conversación |

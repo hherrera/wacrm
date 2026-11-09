@@ -5,8 +5,10 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY apps/api/package.json apps/api/
 COPY packages/shared/package.json packages/shared/
-RUN npm ci -w @conexa/api -w @conexa/shared --include-workspace-root=false
+COPY packages/db/package.json packages/db/
+RUN npm ci -w @conexa/api --include-workspace-root=false
 COPY packages/shared packages/shared
+COPY packages/db packages/db
 COPY apps/api apps/api
 RUN npm run build -w @conexa/api
 
@@ -16,8 +18,10 @@ ENV NODE_ENV=production PORT=4000
 COPY --from=builder /repo/package.json /repo/package-lock.json ./
 COPY --from=builder /repo/apps/api/package.json apps/api/
 COPY --from=builder /repo/packages/shared/package.json packages/shared/
+COPY --from=builder /repo/packages/db/package.json packages/db/
 RUN npm ci -w @conexa/api --omit=dev --include-workspace-root=false && npm cache clean --force
 COPY --from=builder /repo/apps/api/dist apps/api/dist
 USER node
 EXPOSE 4000
+# Same image runs the worker (infra/docker-compose.yml): node apps/api/dist/worker.js
 CMD ["node", "apps/api/dist/server.js"]

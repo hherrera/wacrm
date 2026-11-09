@@ -25,8 +25,16 @@ Cada etapa es uno o varios PR que dejan `main` funcionando. La app Next actual s
 - pg-boss inicializado en `worker.ts`.
 - `apps/web/src/lib/api-client.ts`: `fetch` con el token de la sesión, tipado con contratos de `packages/shared`.
 - **Criterio:** test de integración "request autenticado → 200, sin token → 401".
+- **Estado (hecho):**
+  - `apps/api/src`: `env.ts` (zod), `db.ts` (`createDb` + `withUser(db, claims, fn)`: `role=authenticated` + `request.jwt.claims` en la transacción → RLS igual que PostgREST), `auth.ts` (HS256 con `SUPABASE_JWT_SECRET` y/o JWKS de `SUPABASE_URL`, `aud=authenticated`; 401/403), `errors.ts`, `GET /v1/me`, `/docs`, CORS (`WEB_ORIGIN`).
+  - Colas: `jobs/boss.ts` + `jobs/register.ts` + `worker.ts` (esquema `pgboss`, `maintenance.cleanup` diario 03:00 America/Bogota, aún sin trabajo real hasta `inbound_events`). El mismo contenedor corre como `worker` en compose.
+  - `packages/db`: esquema Drizzle generado con `npm run db:pull -w @conexa/db` (`src/generated`, más un stub de `auth.users` y el tipo `tsvector`). `packages/shared`: `roles` (movido desde web), `ErrorResponse`, `MeResponse`.
+  - Web: `src/lib/api-client.ts` (`NEXT_PUBLIC_API_URL`).
+  - Tests: `apps/api/src/integration.test.ts` (200/401/403, RLS con `withUser`, encolado transaccional de pg-boss con commit y rollback). Corre con `DATABASE_URL`; CI levanta Postgres en el job `api-integration`.
+  - Hallazgo: con los defaults actuales de Supabase, `authenticated` no tenía `SELECT/INSERT/UPDATE/DELETE` sobre las tablas, así que fallaba antes de llegar a RLS. Se corrige en la migración `060_data_api_grants.sql`. **Verificar en el proyecto cloud** que la app web funcione igual.
+  - Pospuesto a 0.4 (llega con los webhooks): `rawBody` y `rate-limit`.
 
-### Etapa 0.3 — Esquema de canales (migración `060_channels.sql`)
+### Etapa 0.3 — Esquema de canales (migración `061_channels.sql`)
 Detalle en [03](03-modelo-datos.md). Backfill: un `channels` tipo `whatsapp_cloud` por cada `whatsapp_config`; `conversations.channel_id` y `messages.channel_id` rellenados; `contact_identities` desde `phone`/`wa_user_id`/`email`. El código viejo sigue funcionando (columnas nuevas nullable hasta 0.6).
 
 ### Etapa 0.4 — Pipelines únicos en `apps/api`

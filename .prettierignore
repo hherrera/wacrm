@@ -9,3 +9,4 @@ package-lock.json
 packages/db/supabase/migrations
 apps/web/public/opus
 **/dist
+packages/db/src/generated/

@@ -16,6 +16,7 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
         NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-es}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
     # Runtime (server-only) secrets; never baked into the image.
     env_file:
       - ../apps/web/.env.local
@@ -43,6 +44,9 @@ services:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
+    image: conexa-api
+    env_file:
+      - ../apps/api/.env
     environment:
       PORT: 4000
     ports:
@@ -60,3 +64,16 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  # pg-boss consumers + schedules (docs/conexa/spec/11-colas-y-trabajos.md).
+  # Same image as api. Needs the Supavisor SESSION-mode URL (port 5432) for LISTEN/NOTIFY.
+  worker:
+    image: conexa-api
+    depends_on: [api]
+    env_file:
+      - ../apps/api/.env
+    environment:
+      DATABASE_URL: ${WORKER_DATABASE_URL:?set WORKER_DATABASE_URL (session-mode pooler)}
+    command: ['node', 'apps/api/dist/worker.js']
+    restart: unless-stopped
+    stop_grace_period: 60s

@@ -2,10 +2,23 @@
   "name": "@conexa/db",
   "version": "0.1.0",
   "private": true,
-  "description": "Esquema de Conexa: migraciones SQL de Supabase (fuente de verdad) en supabase/migrations.",
+  "description": "Esquema de Conexa: migraciones SQL de Supabase (fuente de verdad) + esquema Drizzle introspectado.",
   "scripts": {
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local --no-seed",
-    "db:verify": "supabase db query --local --file supabase/ci/verify-schema.sql"
+    "db:verify": "supabase db query --local --file supabase/ci/verify-schema.sql",
+    "db:pull": "node scripts/pull.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.11",
+    "postgres": "3.4.9"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
   }
 }

@@ -45,6 +45,7 @@ next-env.d.ts
 
 # supabase
 packages/db/supabase/.temp/
+packages/db/supabase/.branches/
 
 # build output / local tooling
 dist/

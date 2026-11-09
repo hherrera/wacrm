@@ -21,7 +21,7 @@ Con el backend separado (`apps/api`, ver [ADR-001](ADR-001-monorepo-web-api.md))
 | Kysely | Constructor de consultas tipado, muy fiel al SQL | Sin modelo de esquema; menos "baterías" que Drizzle |
 
 ## Decisión
-1. **Fuente de verdad del esquema: migraciones SQL** en `packages/db/migrations` (continúan la numeración: 060, 061…). Se aplican con Supabase CLI (`supabase db push` / `migration up`) y CI las verifica como hoy (`migrations.yml`).
+1. **Fuente de verdad del esquema: migraciones SQL** en `packages/db/supabase/migrations` (continúan la numeración: 060, 061…). Se aplican con Supabase CLI (`supabase db push` / `migration up`) y CI las verifica como hoy (`migrations.yml`).
 2. **Capa de consultas en `apps/api`: Drizzle ORM.** El esquema TS (`packages/db/src/schema.ts`) se **genera** con `drizzle-kit pull` tras cada migración (no se escribe a mano, no se usa `drizzle-kit generate`).
 3. Dos modos de ejecución en el repo de datos:
    - `withUser(jwtClaims, tx => …)`: abre transacción, `set local role authenticated` + `set_config('request.jwt.claims', …, true)` → **RLS se aplica** igual que hoy (requests de usuarios).

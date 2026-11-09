@@ -1,0 +1,62 @@
+name: conexa
+
+# Run from the repo root:
+#   docker compose -f infra/docker-compose.yml --env-file apps/web/.env.local up --build
+# (--env-file feeds the ${...} build args below; env_file feeds runtime secrets.)
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      # NEXT_PUBLIC_* vars are inlined at build time — forward them as
+      # build args. Changing any of them requires a rebuild.
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_APP_LOCALE: ${NEXT_PUBLIC_APP_LOCALE:-es}
+    # Runtime (server-only) secrets; never baked into the image.
+    env_file:
+      - ../apps/web/.env.local
+    # `environment` wins over `env_file`, so a stray PORT can't desync
+    # the app from the mapping and the healthcheck.
+    environment:
+      PORT: 3000
+    ports:
+      - '${WEB_HOST_PORT:-3000}:3000'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000').then((r)=>process.exit(r.ok||r.status<500?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4000
+    ports:
+      - '${API_HOST_PORT:-4000}:4000'
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -77,6 +78,10 @@ const nextConfig: NextConfig = {
   // Docker image can run without node_modules or the Next CLI.
   // Harmless outside Docker: `next start` keeps working as before.
   output: "standalone",
+  // Monorepo: dependencies are hoisted to the repo-root node_modules, so
+  // the standalone trace must start there (server.js lands in
+  // .next/standalone/apps/web/).
+  outputFileTracingRoot: path.join(__dirname, "../.."),
   experimental: {
     turbopackPluginRuntimeStrategy: "workerThreads",
     cpus: 4,

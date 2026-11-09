@@ -2,7 +2,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const migrationsDir = join(process.cwd(), "supabase", "migrations");
+// Migrations live in packages/db (monorepo); cwd is apps/web under vitest.
+const migrationsDir = join(process.cwd(), "..", "..", "packages", "db", "supabase", "migrations");
 
 const migrations = readdirSync(migrationsDir)
   .filter((name) => name.endsWith(".sql"))

@@ -1,3 +1,6 @@
+> **Conexa fork.** This repo is being reorganised into a monorepo (`apps/web`, `apps/api`, `packages/*`).
+> See [AGENTS.md](./AGENTS.md) and [docs/conexa](./docs/conexa/README.md). Migrations now live in `packages/db/supabase/migrations`.
+
 # wacrm — CRM Template for WhatsApp
 
 > Self-hostable CRM template for WhatsApp® — shared inbox, contacts,
@@ -83,8 +86,9 @@ in an afternoon and make yours.
 git clone https://github.com/<your-username>/wacrm.git
 cd wacrm
 npm install
-cp .env.local.example .env.local   # fill in Supabase + Meta creds
-npm run dev
+cp apps/web/.env.local.example apps/web/.env.local   # fill in Supabase + Meta creds
+npm run dev:web          # Next.js UI on :3000
+npm run dev:api          # Fastify API on :4000 (Conexa)
 ```
 
 Open <http://localhost:3000>. You'll be redirected to `/login` (or

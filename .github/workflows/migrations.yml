@@ -5,7 +5,7 @@ name: Migrations
 # ("Postgres config not found") or hung forever waiting on a branch
 # action, because two stale dashboard integrations were pointed at this
 # repo and neither could provision. It never applied a migration, so
-# every `supabase/migrations/*.sql` file in this repo has shipped
+# every `supabase/migrations/*.sql` (now `packages/db/supabase/migrations`) file in this repo has shipped
 # unexecuted by CI.
 #
 # This job does the thing that check only claimed to: boot a clean
@@ -23,12 +23,12 @@ on:
     # filters. GitHub leaves a required check that never ran stuck as
     # "expected", which blocks every PR that doesn't touch SQL.
     paths:
-      - 'supabase/**'
+      - 'packages/db/supabase/**'
       - '.github/workflows/migrations.yml'
   push:
     branches: [main]
     paths:
-      - 'supabase/**'
+      - 'packages/db/supabase/**'
       - '.github/workflows/migrations.yml'
 
 concurrency:
@@ -39,6 +39,10 @@ jobs:
   apply:
     name: Apply to a clean database
     runs-on: ubuntu-latest
+    # The Supabase CLI looks for ./supabase relative to the cwd.
+    defaults:
+      run:
+        working-directory: packages/db
     steps:
       - uses: actions/checkout@v7
 

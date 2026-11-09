@@ -30,12 +30,14 @@ Los documentos de `docs/*.md` fuera de esta carpeta son del proyecto original.
 | 08 | [Inbox unificado](spec/08-inbox-unificado.md) | transversal |
 | 09 | [Roadmap: tickets y llamadas](spec/09-roadmap-tickets-llamadas.md) | post-MVP |
 | 10 | [Plan de entrega, decisiones abiertas y riesgos](spec/10-plan-entrega.md) | — |
+| 11 | [**Colas y trabajos en segundo plano**](spec/11-colas-y-trabajos.md) | F0 |
+| 12 | [**Multimedia y transcripciones**](spec/12-multimedia-transcripciones.md) | F0, H2.5, llamadas |
 
 ## Decisiones de arquitectura (ADR)
 | ADR | Decisión | Estado |
 |---|---|---|
 | [001](adr/ADR-001-monorepo-web-api.md) | Monorepo `apps/web` (Next) + `apps/api` (Fastify + zod) | Aceptado |
 | [002](adr/ADR-002-canales-y-adaptadores.md) | Canales + adaptadores + pipelines únicos | Propuesto |
-| [003](adr/ADR-003-acceso-datos-drizzle.md) | Drizzle ORM sobre migraciones SQL | Propuesto |
-| [004](adr/ADR-004-cola-pg-boss.md) | Trabajos asíncronos con pg-boss | Propuesto |
+| [003](adr/ADR-003-acceso-datos-drizzle.md) | Drizzle ORM sobre migraciones SQL | Aceptado |
+| [004](adr/ADR-004-cola-pg-boss.md) | Trabajos asíncronos con pg-boss | Aceptado |
 | [005](adr/ADR-005-waha.md) | WhatsApp no oficial con WAHA | Propuesto |

@@ -125,6 +125,8 @@ CREATE TABLE message_attachments (
   account_id uuid NOT NULL,
   storage_path text NOT NULL, filename text, mime_type text, size_bytes bigint,
   content_id text,            -- imágenes inline en email (cid:)
+  sha256 text, width int, height int, duration_s numeric,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','stored','failed','blocked')),
   created_at timestamptz DEFAULT now()
 );
 
@@ -184,6 +186,9 @@ CREATE TABLE channel_access (
 );
 ```
 Funciones y políticas en [06](06-usuarios-equipos-enrutamiento.md).
+
+## 6b. Multimedia y transcripciones
+`media_transcripts` y `transcription_configs`: ver [12](12-multimedia-transcripciones.md). Bucket `chat-media` pasa a privado.
 
 ## 7. Preparación para fases posteriores (sólo reservar, no implementar)
 - `conversations.ticket_id` **no** se añade aún: la relación será `ticket_conversations (ticket_id, conversation_id)` N:M — ver [09](09-roadmap-tickets-llamadas.md).

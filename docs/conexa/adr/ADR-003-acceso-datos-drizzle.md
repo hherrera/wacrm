@@ -1,6 +1,6 @@
 # ADR-003 · Acceso a datos: Drizzle ORM sobre migraciones SQL
 
-- Estado: **propuesto** (pendiente de confirmación del equipo)
+- Estado: **aceptado** (2026-11-09)
 - Fecha: 2026-11-09
 
 ## Contexto

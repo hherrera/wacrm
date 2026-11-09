@@ -86,7 +86,7 @@ Gestor: **npm workspaces** (ya es el gestor del repo). Turborepo sólo si los ti
 Se mantiene **Supabase Realtime** (`postgres_changes`) para empujar cambios al navegador; respeta RLS, por lo que la visibilidad por equipo se aplica sola. El navegador **sólo se suscribe**; toda escritura pasa por la API. (SSE propio desde la API queda como opción si Realtime no escala.)
 
 ## 6. Procesamiento asíncrono
-**pg-boss** sobre el mismo Postgres (sin Redis adicional). Ver [ADR-004](../adr/ADR-004-cola-pg-boss.md).
+**pg-boss 12** sobre el mismo Postgres (sin Redis adicional). Ver [ADR-004](../adr/ADR-004-cola-pg-boss.md); **el catálogo definitivo de colas, políticas y patrones está en [11](11-colas-y-trabajos.md)** (la tabla siguiente es un resumen).
 
 | Job | Disparo | Qué hace |
 |---|---|---|

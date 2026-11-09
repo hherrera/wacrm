@@ -196,5 +196,5 @@ Funciones y políticas en [06](06-usuarios-equipos-enrutamiento.md).
 - `external_refs` genérico (para Sifinca) se define en la fase de tickets.
 
 ## 8. Migraciones (orden)
-`060_data_api_grants.sql` (grants de tablas para authenticated/service_role, hecho en 0.2) → `061_channels.sql` (tablas + backfill + vista compat) → `062_contact_identities.sql` (+ backfill) → `063_conversation_channel.sql` (columnas + backfill, sin cambiar unicidad) → `064_messages_multichannel.sql` → `065_inbound_events.sql` → `066_teams_access.sql` + RLS → `067_harden_channels.sql` (NOT NULL, nueva unicidad, quitar UNIQUE(account_id)).
-Cada migración idempotente y verificada por `packages/db/ci/verify-schema.sql`.
+`060_data_api_grants.sql` (hecho en 0.2) → `061_channels` → `062_contact_identities` → `063_conversation_channel` (sin cambiar unicidad) → `064_messages_multichannel` → `065_inbound_events` → `066_private_media` → `067_conversation_uniqueness` → `068_harden_channels` → `069_templates_waba` → `070_transcripts` → `071_teams_access` + RLS → `072_email_raw`. Detalle por hito en [PLAN-MVP §2](../PLAN-MVP.md#2-migraciones-numeración-definitiva-por-orden-de-merge).
+Cada migración idempotente y verificada por el job `migrations` de CI.

@@ -3,6 +3,8 @@
 Sistema de atención y soporte multicanal de la inmobiliaria, construido sobre un fork de [wacrm](https://github.com/ArnasDon/wacrm) (`origin` = `hherrera/wacrm`, `upstream` = `ArnasDon/wacrm`).
 Los documentos de `docs/*.md` fuera de esta carpeta son del proyecto original.
 
+**Plan de implementación del MVP → [PLAN-MVP.md](PLAN-MVP.md)** (PRs, calendario, migraciones, decisiones pendientes).
+
 ## Análisis del código base (wacrm @ c81299d)
 | # | Documento |
 |---|---|

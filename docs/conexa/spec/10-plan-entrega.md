@@ -1,15 +1,17 @@
 # 10 · Plan de entrega del MVP
 
+Desglose por PR, calendario, migraciones e infraestructura: [**PLAN-MVP**](../PLAN-MVP.md).
+
 ## Hitos
 | Hito | Contenido | Depende de | Demo de cierre |
 |---|---|---|---|
 | **H0.1** Monorepo | Etapa 0.1 + 0.2 ([02](02-fase0-reorganizacion.md)) | — | CI verde, `apps/api /health` y `/docs` |
-| **H0.2** Canales, colas y pipelines | Etapas 0.3 + 0.4 (migraciones 061–065, colas pg-boss según [11](11-colas-y-trabajos.md), ingest/outbound, webhook Meta en api, motores y crons en pg-boss, **bucket privado + URLs firmadas + `media.mirror`** según [12](12-multimedia-transcripciones.md)) | H0.1 | WhatsApp Cloud funcionando igual que wacrm, servido por `apps/api` |
+| **H0.2** Canales, colas y pipelines | Etapas 0.3 + 0.4 (migraciones 061–067, colas pg-boss según [11](11-colas-y-trabajos.md), ingest/outbound, webhook Meta en api, motores y crons en pg-boss, **bucket privado + URLs firmadas + `media.mirror`** según [12](12-multimedia-transcripciones.md)) | H0.1 | WhatsApp Cloud funcionando igual que wacrm, servido por `apps/api` |
 | **H0.3** Frontend desacoplado | Etapa 0.5 (inbox primero) + 0.6 | H0.2 | Cero `.from(` en `apps/web` |
 | **H1** WA Cloud multi-número | [04](04-canal-whatsapp-cloud.md) | H0.2 (puede solaparse con H0.3) | 2 números, 2 WABA |
 | **H2** WAHA | [05](05-canal-waha.md) | H0.2 | QR → conversación |
 | **H2.5** Transcripción de notas de voz | [12](12-multimedia-transcripciones.md) §4 | H2 | Nota de voz → texto en < 30 s y respuesta IA a su contenido |
-| **H3** Equipos | [06](06-usuarios-equipos-enrutamiento.md), migración 065 | H0.3 | Visibilidad por equipo con tests RLS |
+| **H3** Equipos | [06](06-usuarios-equipos-enrutamiento.md), migración 071 | H0.3 | Visibilidad por equipo con tests RLS |
 | **H4** Email | [07](07-canal-email-mailgun.md) | H0.2, H3 | Hilo Gmail ida y vuelta + log de estados |
 | **H5** Inbox unificado + piloto | [08](08-inbox-unificado.md), dashboard por canal/equipo, hardening, runbooks | H1–H4 | Piloto con usuarios reales |
 

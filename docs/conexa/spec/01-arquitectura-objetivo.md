@@ -104,7 +104,7 @@ Los webhooks responden 200 tras **persistir** el evento crudo (`inbound_events`,
 `packages/shared` define con zod: `SendMessageRequest`, `ConversationListQuery`, `ConversationDTO`, `MessageDTO`, `ChannelDTO`, `ChannelCapabilities`, enums. La API los usa para validar (`fastify-type-provider-zod`) y generar OpenAPI; la web los usa para tipar `api-client`. Un cambio de contrato rompe el typecheck en ambos lados.
 
 ## 8. Despliegue (MVP)
-Un VPS/host Docker con `docker compose`: `web`, `api`, `worker`, `waha`, detrás de un proxy TLS (Caddy/Traefik). Supabase: proyecto cloud o self-hosted (decisión abierta, ver [10](10-plan-entrega.md)). WAHA **no** debe exponerse a internet: sólo `api` habla con él por red interna.
+Un VPS/host Docker con `docker compose`: `web`, `api`, `worker`, `waha`, detrás de un proxy TLS (Caddy/Traefik). Supabase: **Supabase Cloud** (decidido; ver [10](10-plan-entrega.md)). WAHA **no** debe exponerse a internet: sólo `api` habla con él por red interna.
 
 ## 9. Tecnologías nuevas
 | Paquete | Uso |

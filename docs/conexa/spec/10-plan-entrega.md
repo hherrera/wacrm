@@ -26,7 +26,7 @@ Orden recomendado: H0.1 → H0.2 → (H0.3 ∥ H1) → H2 → H3 → H4 → H5.
 ## Entorno
 | Componente | MVP |
 |---|---|
-| Supabase | **Decisión abierta:** cloud (más simple; región `us-east-1`/`sa-east-1`) vs self-hosted (datos en infraestructura propia). |
+| Supabase | **Supabase Cloud** (decidido 2026-11-09). Región recomendada: `sa-east-1` (São Paulo), la más cercana a Colombia. Plan Pro (backups diarios, sin pausa por inactividad). |
 | web + api + worker + WAHA | Docker Compose en un VPS (4 vCPU / 8 GB para el piloto), proxy TLS (Caddy) |
 | Dominio | `conexa.<empresa>.com` (web), `api.conexa.<empresa>.com` (api + webhooks) |
 | Mailgun | Subdominio verificado (SPF, DKIM, MX), región a decidir |
@@ -34,7 +34,7 @@ Orden recomendado: H0.1 → H0.2 → (H0.3 ∥ H1) → H2 → H3 → H4 → H5.
 | Observabilidad | Logs estructurados (pino de Fastify), `/health` por servicio, alertas de canal caído vía notificaciones in-app + email |
 
 ## Decisiones abiertas (requieren al negocio/TI)
-1. Supabase cloud vs self-hosted.
+1. ~~Supabase cloud vs self-hosted~~ → **Cloud** (2026-11-09).
 2. Qué números pasan a Cloud API y cuáles quedan en WAHA; aceptación formal del riesgo WAHA.
 3. Buzones de email del piloto y si se cambia MX o se usa reenvío.
 4. Equipos del piloto y sus canales.

@@ -41,3 +41,4 @@ Los documentos de `docs/*.md` fuera de esta carpeta son del proyecto original.
 | [003](adr/ADR-003-acceso-datos-drizzle.md) | Drizzle ORM sobre migraciones SQL | Aceptado |
 | [004](adr/ADR-004-cola-pg-boss.md) | Trabajos asíncronos con pg-boss | Aceptado |
 | [005](adr/ADR-005-waha.md) | WhatsApp no oficial con WAHA | Propuesto |
+| [006](adr/ADR-006-email-raw-primero.md) | Email: guardar el .eml crudo antes de parsear | Propuesto |

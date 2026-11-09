@@ -12,25 +12,37 @@ Un canal `email_mailgun` = **una dirección** sobre un dominio verificado en Mai
 
 Al crear el canal la API:
 1. Verifica el dominio (`GET /v4/domains/{domain}`) y su estado DNS.
-2. Crea/actualiza la **Route**: `match_recipient("^<local>(\+.*)?@<domain>$")` → `forward("<api>/webhooks/mailgun/inbound")`, `stop()`.
+2. Crea/actualiza la **Route**: `match_recipient("^<local>(\+.*)?@<domain>$")` → `store(notify="<api>/webhooks/mailgun/inbound")`, `stop()` — **crudo primero**, ver [ADR-006](../adr/ADR-006-email-raw-primero.md).
 3. Registra los **webhooks de eventos** del dominio (`delivered`, `permanent_fail`, `temporary_fail`, `opened`, `complained`, `unsubscribed`) → `<api>/webhooks/mailgun/events`.
 
 Si el correo actual de la empresa está en Google/Microsoft y no se quiere cambiar MX: **reenvío** desde el buzón original a la dirección Mailgun (documentar en runbook); las respuestas salen por Mailgun con `From` del dominio verificado.
 
-## Entrante — `POST /webhooks/mailgun/inbound`
-1. `multipart/form-data`. Verificar firma: `hex(HMAC-SHA256(webhook_signing_key, timestamp + token)) == signature`; timestamp ±5 min; `token` no repetido (dedupe en `inbound_events`).
-2. Resolver canal por `recipient` (quitando `+token`).
-3. Extraer: `sender`/`from`, `subject`, `body-plain`, `stripped-text`, `body-html`, `stripped-html`, `message-headers` (JSON → `Message-Id`, `In-Reply-To`, `References`, `Auto-Submitted`, `X-Autoreply`, `Cc`), `attachment-N`, `content-id-map`.
-4. **Hilo** (orden):
+## Entrante — crudo primero ([ADR-006](../adr/ADR-006-email-raw-primero.md))
+
+### Webhook `POST /webhooks/mailgun/inbound` (aviso de `store()`)
+1. Verificar firma: `hex(HMAC-SHA256(webhook_signing_key, timestamp + token)) == signature`; timestamp ±5 min; `token` no repetido.
+2. Resolver canal por `recipient` (quitando `+token`). Sin canal → **406** (Mailgun no reintenta).
+3. Una transacción: `inbound_events` (`dedupe_key` = clave de almacenamiento de Mailgun) + `send('email.fetch_raw')` → **200**. Nada más en el request.
+
+### Job `email.fetch_raw`
+4. Descargar el **MIME crudo** desde `message-url` (`Accept: message/rfc2822`) → Storage privado `email-raw/…/<eventId>.eml` con SHA-256 y tamaño (`inbound_events.raw_*`).
+5. Descargar la versión **parseada por Mailgun** (`stripped-text`, `stripped-html`, `message-headers`, `content-id-map`) → snapshot en `inbound_events.payload` (sin adjuntos).
+6. Encolar `inbound.ingest`. Reintentos con backoff; Mailgun conserva el mensaje ~3 días; la DLQ alerta antes de que expire.
+
+### Job `inbound.ingest` (email) — sólo lee lo ya guardado
+7. Parsear el `.eml` con librería MIME (charsets, adjuntos, inline `cid:`, headers `Message-Id`, `In-Reply-To`, `References`, `Cc`, `Auto-Submitted`, `X-Autoreply`, `Authentication-Results`).
+8. **Hilo** (orden):
    1. `In-Reply-To` = `external_id` de un mensaje nuestro → esa conversación.
    2. `References` (del más reciente al más antiguo).
    3. Token en la dirección `local+<token>@domain` (token opaco firmado ↔ conversación).
    4. Si no → **conversación nueva** con `thread_key = Message-Id` y `subject`.
-5. Identidad `email` (normalizada) → contacto (`resolveContact`). Nombre desde el `From`.
-6. Mensaje: `content_type='email'`, `content_text = stripped-text` (fallback `body-plain`), `body_html = stripped-html` (fallback `body-html`) **sanitizado al renderizar** (DOMPurify en la web; nunca HTML sin sanear), `metadata.headers` (subset), `metadata.cc`, adjuntos → `message_attachments` en Storage, imágenes inline resueltas por `content-id-map`.
-7. Auto-respuestas (`Auto-Submitted: auto-*`, `X-Autoreply`, `Precedence: bulk|auto_reply`): se registran pero **no reabren** la conversación ni disparan automations/IA.
-8. Respuestas HTTP: 200 = procesado; **406 = rechazo definitivo** (firma inválida, destinatario sin canal) para que Mailgun no reintente; 5xx sólo ante fallo nuestro (Mailgun reintenta hasta ~8 h).
-9. Correos grandes: la Route puede usar `store(notify=…)` y un job descarga el mensaje almacenado (evita límites de body).
+9. Identidad `email` (normalizada) → contacto (`resolveContact`). Nombre desde el `From`.
+10. Mensaje: `content_type='email'`, `content_text = stripped-text` del snapshot (fallback: texto del .eml), `body_html = stripped-html` (fallback: HTML del .eml) **sanitizado al renderizar** (DOMPurify en la web; nunca HTML sin sanear), `metadata.headers` (subset), `metadata.cc`, `metadata.auth` (SPF/DKIM/DMARC), `inbound_event_id`; adjuntos extraídos → `message_attachments`, imágenes inline resueltas por `cid`.
+11. Auto-respuestas (`Auto-Submitted: auto-*`, `X-Autoreply`, `Precedence: bulk|auto_reply`): se registran pero **no reabren** la conversación ni disparan automations/IA.
+12. **Reproceso**: `POST /admin/inbound-events/:id/reprocess` repite 7–11 desde lo guardado, sin consultar Mailgun. Idempotente por `Message-Id` + canal.
+13. UI: acción **"Ver original / descargar .eml"** en cada correo (descarga como adjunto, nunca renderizado).
+
+Respuestas HTTP del webhook: 200 = aceptado; **406 = rechazo definitivo** (firma inválida, destinatario sin canal); 5xx sólo ante fallo nuestro (Mailgun reintenta).
 
 ## Saliente (adapter)
 `POST https://api[.eu].mailgun.net/v3/{domain}/messages` (multipart):
@@ -63,3 +75,5 @@ En la UI, cada mensaje de email muestra su estado y un desplegable con el **hist
 5. Apertura del correo → estado `read` (si tracking activo).
 6. Firma inválida → nada persistido.
 7. Un auto-reply "fuera de oficina" no reabre una conversación cerrada.
+8. Cada correo recibido tiene su `.eml` en `email-raw` con SHA-256; "descargar original" devuelve un archivo idéntico byte a byte.
+9. Reprocesar un correo (tras borrar su mensaje) lo reconstruye igual sin consultar Mailgun.

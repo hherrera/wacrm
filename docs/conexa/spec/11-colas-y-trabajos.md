@@ -52,6 +52,7 @@ Hoy (wacrm) no hay cola: el trabajo corre en `after()` dentro del webhook Meta (
 | `outbound.send` | `{messageId}` | `key_strict_fifo`, clave `conversationId`; `group = channelId` | `groupConcurrency`: WAHA 1, Cloud 10, Mailgun 5 | 6, backoff, máx 5 min | `outbound.dead` | Mantiene orden por conversación; WAHA serializado por número (riesgo de baneo) |
 | `media.mirror` | `{attachmentId, sourceUrl, channelId}` | `standard`, **prioridad alta** | 10 | 5, retraso corto (5 s) | `media.dead` | Copia media del proveedor a Storage. WAHA: plazo de 180 s (subir `WHATSAPP_FILES_LIFETIME`) |
 | `media.transcribe` | `{attachmentId}` | `standard`; `group = accountId` | `groupConcurrency` 3 (costo/CPU) | 3, backoff | `media.dead` | Ver [12](12-multimedia-transcripciones.md) |
+| `email.fetch_raw` | `{eventId}` | `standard` | 5 | 10, backoff, máx 1 h (Mailgun guarda ~3 días) | `inbound.dead` | Descarga el .eml crudo + parseado de Mailgun → Storage `email-raw` → `inbound.ingest` ([ADR-006](../adr/ADR-006-email-raw-primero.md)) |
 | `status.apply` | `{eventId}` | `key_strict_fifo`, clave `externalId` | 10 | 5 | `inbound.dead` | Acks WA/WAHA y eventos Mailgun → `message_delivery_events` + estado monotónico |
 | `webhooks.deliver` | `{endpointId, eventId}` | `standard` | 5 | 8, backoff, máx 1 h (≈ 24 h total) | `webhooks.dead` | Webhooks salientes a integraciones (hoy 1 intento) |
 | `notify.user` | `{notificationId}` | `standard` | 5 | 3 | — | Email/escritorio para asignaciones y canales caídos |
@@ -63,7 +64,7 @@ Hoy (wacrm) no hay cola: el trabajo corre en `after()` dentro del webhook Meta (
 | `flows.tick` | cada minuto | `/api/flows/cron` |
 | `channel.health` | cada minuto | Sesiones WAHA, token/registro de números Cloud, dominios Mailgun |
 | `mailgun.reconcile` | cada 15 min | Events API para mensajes sin estado final |
-| `maintenance.cleanup` | diario 03:00 (America/Bogota) | Purga `inbound_events` > 30 días, jobs archivados |
+| `maintenance.cleanup` | diario 03:00 (America/Bogota) | Purga `inbound_events` > 30 días (excepto email con .eml: retención documental, ADR-006), jobs archivados |
 | *(post-MVP)* `sla.check`, `pbx.cdr.reconcile`, `call.transcribe` | — | Tickets y llamadas |
 
 ## 5. Operación y observabilidad

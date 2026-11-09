@@ -158,7 +158,7 @@ CREATE TABLE inbound_events (
   UNIQUE (provider, dedupe_key)
 );
 ```
-Retención: 30 días (job de limpieza).
+Retención: 30 días (job de limpieza), **salvo email**: el correo crudo (.eml) va al bucket privado `email-raw` y la fila conserva `account_id`, `raw_storage_path`, `raw_sha256`, `raw_size_bytes`, `raw_fetched_at` con retención documental. `messages.inbound_event_id` enlaza cada mensaje con su evento crudo ("ver original"). Ver [ADR-006](../adr/ADR-006-email-raw-primero.md).
 
 ## 6. Equipos y acceso (F3)
 

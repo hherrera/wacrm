@@ -3,7 +3,7 @@ import { createBoss } from './jobs/boss';
 import { registerJobs } from './jobs/register';
 
 const env = parseEnv();
-const boss = createBoss(env.DATABASE_URL, 'worker');
+const boss = createBoss(env.WORKER_DATABASE_URL ?? env.DATABASE_URL, 'worker');
 boss.on('error', (err) => console.error('[pg-boss]', err));
 
 await boss.start();

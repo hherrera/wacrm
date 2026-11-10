@@ -3,6 +3,8 @@ import { z } from 'zod';
 const Env = z.object({
   // API: Supavisor transaction mode (6543). Worker: session mode (5432), needed for LISTEN/NOTIFY.
   DATABASE_URL: z.string().min(1),
+  // Session-mode URL for the worker; wins over DATABASE_URL there (one .env serves both locally).
+  WORKER_DATABASE_URL: z.string().min(1).optional(),
   // The HTTP server needs at least one (see auth.ts): JWKS for asymmetric
   // Supabase signing keys, the secret for legacy HS256 tokens.
   SUPABASE_URL: z.url().optional(),

@@ -52,10 +52,10 @@ conexa/
          ingest.ts          ingestInbound(), ingestStatus()  — único camino de entrada
          outbound.ts        sendToConversation()            — único camino de salida
          events.ts          publicar eventos de dominio → jobs
-      src/jobs/             handlers pg-boss (inbound.process, outbound.retry, channel.health, …)
+      src/jobs/             handlers pg-boss (inbound.process, outbound.send, channel.health, …)
   packages/
     shared/                 zod schemas de contratos API, enums, capacidades, tipos DTO
-    db/                     migrations/ (las 059 de wacrm + nuevas), seed, tipos generados
+    db/                     supabase/migrations/ (001–059 de wacrm + nuevas), esquema Drizzle generado
   infra/
     docker-compose.yml      web, api, worker, waha (+ supabase local opcional)
   docs/conexa/
@@ -79,7 +79,7 @@ Gestor: **npm workspaces** (ya es el gestor del repo). Turborepo sólo si los ti
 - Acceso a datos en la API con **Drizzle ORM** sobre migraciones SQL ([ADR-003](../adr/ADR-003-acceso-datos-drizzle.md)), en dos modos:
   - `withUser(claims, tx)` — transacción con `role authenticated` + claims del JWT: **RLS se aplica** (defensa en profundidad; las políticas de visibilidad por equipo/canal viven en la BD, ver [06](06-usuarios-equipos-enrutamiento.md)).
   - `asService(tx)` — sin RLS, sólo para webhooks, workers y API pública (filtra por `account_id` en el repo, como hoy).
-- Migraciones: SQL en `packages/db/migrations` (fuente de verdad, continúan desde 060); esquema Drizzle generado con `drizzle-kit pull`.
+- Migraciones: SQL en `packages/db/supabase/migrations` (fuente de verdad; 060 = grants, las nuevas continúan desde 061); esquema Drizzle generado con `drizzle-kit pull`.
 - API pública `/public/v1` con API keys (se migra tal cual desde `src/app/api/v1`).
 
 ## 5. Tiempo real
@@ -91,9 +91,9 @@ Se mantiene **Supabase Realtime** (`postgres_changes`) para empujar cambios al n
 | Job | Disparo | Qué hace |
 |---|---|---|
 | `inbound.process` | tras `ingestInbound` persistir el mensaje | flows → automations → IA → webhooks salientes (hoy en serie dentro del webhook Meta) |
-| `outbound.send` | envíos de motores, reintentos | `sendToConversation` con reintento exponencial |
+| `outbound.send` | todo envío saliente (UI, API, motores) | adaptador del canal con reintento exponencial |
 | `media.mirror` | adjunto entrante | copiar a Storage `chat-media` |
-| `webhooks-out.deliver` | evento de dominio | entrega con reintentos (hoy 1 intento) |
+| `webhooks.deliver` | evento de dominio | entrega con reintentos (hoy 1 intento) |
 | `channel.health` (cron 1 min) | — | estado sesiones WAHA, salud de números Cloud |
 | `mailgun.reconcile` (cron 15 min) | — | Events API para estados perdidos |
 | `automations.tick`, `flows.tick` (cron) | — | reemplazan `/api/automations/cron` y `/api/flows/cron` |
@@ -114,6 +114,6 @@ Un VPS/host Docker con `docker compose`: `web`, `api`, `worker`, `waha`, detrás
 | `drizzle-orm`, `drizzle-kit`, `postgres` (driver) | consultas tipadas y transacciones; esquema generado por introspección |
 | `jose` | verificación JWT |
 | `zod` | contratos |
-| `mailparser`? | **no** — Mailgun ya entrega el correo parseado |
+| librería MIME (p. ej. `mailparser`) | parseo del `.eml` crudo en `inbound.ingest` ([ADR-006](../adr/ADR-006-email-raw-primero.md)); a elegir en H4 |
 
 Todo lo demás (supabase-js, vitest, prettier, eslint) ya está en el repo.

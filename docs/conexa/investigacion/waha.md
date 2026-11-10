@@ -222,7 +222,7 @@ Ejemplo de `message` con media:
 ## 7. Media entrante
 
 - WAHA descarga la media y la sirve en `media.url` (`/api/files/...`). **Esa URL exige `X-Api-Key`.** Conexa debe descargarla desde el backend y subirla a Supabase Storage en el handler del webhook.
-- **Por defecto los archivos viven solo 180 segundos** (`WHATSAPP_FILES_LIFETIME`). Hay que copiarlos de inmediato, o poner `WHATSAPP_FILES_LIFETIME=0` con un volumen `/app/.media` y luego limpiarlo, o usar S3 (`WAHA_MEDIA_STORAGE=S3` con `WAHA_S3_BUCKET`, `WAHA_S3_REGION`, `WAHA_S3_ENDPOINT`, etc.; compatible con Supabase Storage S3 o R2).
+- **Por defecto los archivos viven solo 180 segundos** (`WHATSAPP_FILES_LIFETIME`). **Decidido para Conexa (2026-11-10): `WHATSAPP_FILES_LIFETIME=3600`**: `api` descarga la media a Supabase Storage al recibir el webhook, así que WAHA solo necesita conservarla hasta entonces; se puede subir si las descargas se atrasan. Alternativas evaluadas: Hay que copiarlos de inmediato, o poner `WHATSAPP_FILES_LIFETIME=0` con un volumen `/app/.media` y luego limpiarlo, o usar S3 (`WAHA_MEDIA_STORAGE=S3` con `WAHA_S3_BUCKET`, `WAHA_S3_REGION`, `WAHA_S3_ENDPOINT`, etc.; compatible con Supabase Storage S3 o R2).
 - Si `hasMedia=true` pero `media.url=null`, la descarga se omitió por la configuración. Si `media.error` no es null, falló.
 - Control de descarga: `WAHA_EVENTS_DOWNLOAD_MEDIA` y `WAHA_EVENTS_DOWNLOAD_MEDIA_MIMETYPES`.
 - `WAHA_BASE_URL` define el host que aparece en `media.url` (por ejemplo, el hostname interno de la red docker).
@@ -260,13 +260,13 @@ services:
       WHATSAPP_SWAGGER_USERNAME: admin
       WHATSAPP_SWAGGER_PASSWORD: <pwd>
       WAHA_BASE_URL: https://waha.conexa.internal
-      WHATSAPP_FILES_LIFETIME: "0"
+      WHATSAPP_FILES_LIFETIME: "3600"   # api copia la media a Storage al recibirla; subir si las descargas se atrasan
       WHATSAPP_SESSIONS_POSTGRESQL_URL: postgres://…   # opcional
       WHATSAPP_HOOK_EVENTS: ""   # preferimos la config por sesión
     volumes:
       - ./waha/sessions:/app/.sessions
       - ./waha/media:/app/.media
-    ports: ["127.0.0.1:3000:3000"]   # solo detrás de un reverse proxy con TLS
+    ports: ["127.0.0.1:3000:3000"]   # solo loopback (depuración). En Conexa WAHA no se publica: solo `api` lo alcanza por la red interna (spec 05)
 ```
 
 Puerto por defecto: 3000. Para monitoreo: `GET /ping`, `GET /health` y `GET /api/server/version`.

@@ -73,7 +73,7 @@ Respuesta:
 ```json
 { "id": "<20261109153012.1a2b3c4d5e@mg.inmobiliaria.co>", "message": "Queued. Thank you." }
 ```
-**El `id` devuelto ES el `Message-Id` del correo enviado** (con `<>`). Hay que guardarlo en `messages.external_id` y en la tabla de hilos para hacer el matching de las respuestas.
+**El `id` devuelto ES el `Message-Id` del correo enviado** (con `<>`). Hay que guardarlo en `messages.message_id` (`external_id` en la API) y en la tabla de hilos para hacer el matching de las respuestas.
 
 > Sobre fijar nuestro propio `Message-Id` con `h:Message-Id`: la referencia actual de la API no lo documenta. No dependemos de eso, porque basta con guardar el `id` que devuelve la API. Si se quiere un id generado por nosotros, hay que probarlo primero en sandbox.
 

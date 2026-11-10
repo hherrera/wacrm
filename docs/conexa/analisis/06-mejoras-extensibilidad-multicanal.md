@@ -69,8 +69,8 @@ Los webhooks entrantes **no** forman parte de la interfaz: cada canal tiene su r
 
 | # | Problema | Mejora (MVP → futuro) |
 |---|---|---|
-| E1 | Sin cola; envíos fallidos no se reintentan; webhooks salientes un intento | MVP: tabla `outbound_jobs` / reutilizar patrón lease de broadcasts + cron `/api/jobs/cron` cada minuto. Futuro: worker dedicado (pg-boss o similar) cuando entren FreePBX/transcripciones. |
-| E2 | Tareas periódicas nuevas: salud de sesiones WAHA, reconciliación Events API Mailgun | Endpoints cron con el mismo secreto que `automations/cron`. |
+| E1 | Sin cola; envíos fallidos no se reintentan; webhooks salientes un intento | MVP: tabla `outbound_jobs` / reutilizar patrón lease de broadcasts + cron `/api/jobs/cron` cada minuto. Futuro: worker dedicado (pg-boss o similar) cuando entren FreePBX/transcripciones. *(Superado: pg-boss desde la Fase 0, [ADR-004](../adr/ADR-004-cola-pg-boss.md).)* |
+| E2 | Tareas periódicas nuevas: salud de sesiones WAHA, reconciliación Events API Mailgun | Endpoints cron con el mismo secreto que `automations/cron`. *(Superado: schedules de pg-boss, [spec 11](../spec/11-colas-y-trabajos.md).)* |
 
 ## F. Contrato externo
 Webhooks salientes, `/api/v1` y MCP exponen `whatsapp_message_id`. Añadir `channel {id,type,name}` y `external_id`; mantener `whatsapp_message_id` como alias para no romper integraciones.

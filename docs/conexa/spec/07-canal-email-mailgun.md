@@ -32,7 +32,7 @@ Si el correo actual de la empresa está en Google/Microsoft y no se quiere cambi
 ### Job `inbound.ingest` (email) — sólo lee lo ya guardado
 7. Parsear el `.eml` con librería MIME (charsets, adjuntos, inline `cid:`, headers `Message-Id`, `In-Reply-To`, `References`, `Cc`, `Auto-Submitted`, `X-Autoreply`, `Authentication-Results`).
 8. **Hilo** (orden):
-   1. `In-Reply-To` = `external_id` de un mensaje nuestro → esa conversación.
+   1. `In-Reply-To` = `message_id` (`external_id` en la API) de un mensaje nuestro → esa conversación.
    2. `References` (del más reciente al más antiguo).
    3. Token en la dirección `local+<token>@domain` (token opaco firmado ↔ conversación).
    4. Si no → **conversación nueva** con `thread_key = Message-Id` y `subject`.
@@ -45,16 +45,16 @@ Si el correo actual de la empresa está en Google/Microsoft y no se quiere cambi
 Respuestas HTTP del webhook: 200 = aceptado; **406 = rechazo definitivo** (firma inválida, destinatario sin canal); 5xx sólo ante fallo nuestro (Mailgun reintenta).
 
 ## Saliente (adapter)
-`POST https://api[.eu].mailgun.net/v3/{domain}/messages` (multipart):
+`POST https://api[.eu].mailgun.net/v3/{domain}/messages.mime` (multipart: `to` + `message`; decidido 2026-11-10, [ADR-006](../adr/ADR-006-email-raw-primero.md)). El MIME lo construimos nosotros; el `.eml` saliente se guarda primero en `email-raw` (`direction=out`) y después se envía. Lo siguiente son cabeceras y partes de ese MIME, salvo `v:` y `o:`, que van como parámetros del POST:
 - `from`: `"<Nombre agente> vía <from_name>" <from_address>`; `to`: email del contacto; `cc` opcional.
 - `subject`: `Re: <asunto original>` (sin duplicar "Re:").
 - `text` + `html` (composer de email: texto enriquecido básico + firma del canal).
-- `h:In-Reply-To` = `external_id` del último mensaje entrante; `h:References` = cadena de Message-Ids del hilo (cap. ~20).
-- `h:Reply-To` = `local+<token>@domain` si `reply_to_mode=token`.
+- `In-Reply-To` = `message_id` (`external_id` en la API) del último mensaje entrante; `References` = cadena de Message-Ids del hilo (cap. ~20).
+- `Reply-To` = `local+<token>@domain` si `reply_to_mode=token`.
 - `v:conexa_message_id`, `v:conexa_conversation_id` (vuelven en los eventos).
 - `o:tracking-opens` según canal; `o:tracking-clicks=no` (no reescribir enlaces de soporte).
-- adjuntos `attachment` desde Storage.
-- Respuesta `{ id: "<…@domain>" }` → `messages.external_id` (= Message-Id del correo enviado; base del hilo).
+- adjuntos como partes MIME, leídos de Storage.
+- `Message-Id` **propio**, generado antes de enviar → `messages.message_id` (`external_id` en la API; base del hilo). No se depende del `id` que devuelve Mailgun. ⚠️ Verificar en pruebas que Mailgun conserva ese `Message-Id`.
 - Capacidades: `subject, html, cc, maxAttachments: 10, maxMediaBytes: 25 MB, replyWindowHours: null, templates: false, reactions: false`.
 
 ## Log de estados — `POST /webhooks/mailgun/events`

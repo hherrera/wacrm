@@ -43,7 +43,7 @@ webhook ─► inbound.ingest ─► message + message_attachments(status=pendin
                           └► media.mirror (prioridad alta)
                                  ├─ WA Cloud: GET Graph media (token del canal)
                                  ├─ WAHA: GET media.url con X-Api-Key (antes de que expire)
-                                 └─ Mailgun: attachment-N (ya en el POST) o store() → GET
+                                 └─ Mailgun: adjuntos extraídos del .eml ya guardado (ADR-006)
                               ─► Storage (privado) + sha256 + metadatos (dimensiones, duración)
                               ─► status=stored  ─► Realtime actualiza la burbuja
                               └► si es audio/voz ─► media.transcribe

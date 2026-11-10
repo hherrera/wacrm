@@ -4,7 +4,7 @@
 - Fecha: 2026-11-09
 
 ## Contexto
-wacrm **no usa ORM**: el código consulta con `supabase-js` (PostgREST, `.from('tabla')`) y el esquema son 59 migraciones SQL escritas a mano (`supabase/migrations/001…059`) con mucha lógica en la BD: políticas RLS, funciones `SECURITY DEFINER` (`is_account_member`, `bump_conversation_on_inbound`, merges de duplicados), triggers, índices parciales.
+wacrm **no usa ORM**: el código consulta con `supabase-js` (PostgREST, `.from('tabla')`) y el esquema son 57 migraciones SQL escritas a mano (`supabase/migrations/001…059`; los números 050 y 056 no existen) con mucha lógica en la BD: políticas RLS, funciones `SECURITY DEFINER` (`is_account_member`, `bump_conversation_on_inbound`, merges de duplicados), triggers, índices parciales.
 
 Con el backend separado (`apps/api`, ver [ADR-001](ADR-001-monorepo-web-api.md)) tenemos conexión directa a Postgres, y aparecen necesidades que PostgREST cubre mal:
 - **Transacciones** de varios pasos (ingesta: contacto + identidades + conversación + mensaje + evento).
@@ -17,12 +17,12 @@ Con el backend separado (`apps/api`, ver [ADR-001](ADR-001-monorepo-web-api.md))
 |---|---|---|
 | Seguir con `supabase-js` | Cero cambio; RLS automático con el JWT | Sin transacciones; tipos débiles; N+1; consultas complejas = RPCs SQL |
 | **Drizzle ORM** | SQL-like, TS puro, sin runtime pesado; `drizzle-kit pull` introspecciona el esquema existente; transacciones; soporte documentado para RLS de Supabase (`set_config('request.jwt.claims')` + `set local role authenticated` por transacción) | Otra capa que aprender; sus migraciones generadas no cubren bien funciones/triggers |
-| Prisma | Popular, buen DX | Motor/cliente generado pesado; RLS incómodo; peor con SQL avanzado (índices parciales, funciones); migraciones propias chocan con las 59 SQL |
+| Prisma | Popular, buen DX | Motor/cliente generado pesado; RLS incómodo; peor con SQL avanzado (índices parciales, funciones); migraciones propias chocan con las SQL existentes |
 | Kysely | Constructor de consultas tipado, muy fiel al SQL | Sin modelo de esquema; menos "baterías" que Drizzle |
 
 ## Decisión
 1. **Fuente de verdad del esquema: migraciones SQL** en `packages/db/supabase/migrations` (continúan la numeración: 060, 061…). Se aplican con Supabase CLI (`supabase db push` / `migration up`) y CI las verifica como hoy (`migrations.yml`).
-2. **Capa de consultas en `apps/api`: Drizzle ORM.** El esquema TS (`packages/db/src/schema.ts`) se **genera** con `drizzle-kit pull` tras cada migración (no se escribe a mano, no se usa `drizzle-kit generate`).
+2. **Capa de consultas en `apps/api`: Drizzle ORM.** El esquema TS (`packages/db/src/generated/schema.ts`) se **genera** con `drizzle-kit pull` (`npm run db:pull -w @conexa/db`) tras cada migración (no se escribe a mano, no se usa `drizzle-kit generate`).
 3. Dos modos de ejecución en el repo de datos:
    - `withUser(jwtClaims, tx => …)`: abre transacción, `set local role authenticated` + `set_config('request.jwt.claims', …, true)` → **RLS se aplica** igual que hoy (requests de usuarios).
    - `asService(tx => …)`: rol de servicio, sin RLS (webhooks, workers, API pública) → los repos filtran por `account_id` explícitamente.

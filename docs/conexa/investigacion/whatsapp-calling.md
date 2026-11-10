@@ -2,7 +2,7 @@
 
 > Fecha de investigación: 2026-11-09. Las páginas de Meta se leyeron completas salvo donde se marca **[resumen]**: ahí la página venía truncada y el dato hay que confirmarlo antes de implementar.
 
-**Decisión de alcance:** la **etapa 1** atiende las llamadas **en la misma interfaz web de Conexa** (WebRTC en el navegador del agente, señalización por Graph API). La opción **SIP → FreePBX** se evalúa en fases posteriores (ver §8).
+**Decisión de alcance:** la **etapa 1** atiende las llamadas **en la misma interfaz web de Conexa** (WebRTC en el navegador del agente, señalización por Graph API). La opción **SIP → FreePBX** se evalúa en fases posteriores (ver §8). **En el MVP las llamadas no se implementan** (decidido 2026-11-10): sólo entran el diseño y una prueba de concepto — activar llamadas en un número de prueba, recibir el campo `calls` del webhook y aceptar una llamada con WebRTC desde una página desechable ([PLAN-MVP](../PLAN-MVP.md), P36).
 
 Fuentes:
 - Calling (visión general y changelog de calling): https://developers.facebook.com/documentation/business-messaging/whatsapp/calling
@@ -198,6 +198,8 @@ La regla de Meta: cada versión deja de funcionar dos años después de que sale
 
 ### Recomendación de versión
 
+**Decidido (2026-11-10):** `v25.0`, unificada en una sola constante, en un PR pequeño propio al inicio del plan ([PLAN-MVP](../PLAN-MVP.md), P0, Fase 1), independiente del port de P3.
+
 1. Subir **ambas** constantes a **`v25.0`** antes del 21-01-2027. v25 está estable desde febrero de 2026 y funciona hasta el 29-07-2028. Si se prefiere más margen, se puede subir a v27 y vigilar su changelog.
 2. Unificar las dos constantes en una sola exportada desde `meta-api.ts`. Hoy la de `templates/sync/route.ts` está duplicada y puede quedarse atrás.
 3. Cuando el webhook se mueva a `apps/api` (fase 0), usar esa misma constante, idealmente desde `packages/shared` o `apps/api`.
@@ -209,7 +211,7 @@ La regla de Meta: cada versión deja de funcionar dos años después de que sale
 |---|---|---|
 | URL del webhook, verificación y firma | Existe (`apps/web/src/app/api/whatsapp/webhook/route.ts`; se mueve a `apps/api` en la fase 0) | Suscribir el campo `calls` en Meta |
 | Enrutado por `change.field` | Solo separa plantillas; todo lo demás se trata como mensajería (`route.ts:320-345`) | Agregar la rama `field === 'calls'`. Sin ella, `calls[]` se ignora y sus `statuses` (`type: "call"`) caen en `handleStatusUpdate`, que espera estados de mensajes |
-| `messages.content_type` | El CHECK de `010_flows.sql:62` no admite `'call'` | Migración 061: `'call'` y los metadatos (WACID, dirección, estado, duración, agente) |
+| `messages.content_type` | El CHECK de `010_flows.sql:62` no admite `'call'` | Migración nueva, **post-MVP** (número posterior a 072; no va en la 064; 061–072 ya están asignadas en [PLAN-MVP §2](../PLAN-MVP.md)): `'call'` y los metadatos (WACID, dirección, estado, duración, agente) |
 | Cliente Graph API | `meta-api.ts` | `enableCalling`, `updateCallSettings`, `callAction(pre_accept, accept, reject, terminate)` y subir de versión (§9) |
 | Tiempo real hacia los agentes | Supabase Realtime, que ya usa el inbox | Canal o evento de "llamada entrante" con un plazo menor a 30 s |
 | UI de llamada | No existe | Aviso de llamada entrante, botones Atender/Rechazar/Colgar, `RTCPeerConnection`, permiso de micrófono y estado de la llamada |

@@ -17,7 +17,7 @@ CREATE TABLE channels (
   status        channel_status NOT NULL DEFAULT 'pending',
   status_detail text,                          -- último error / estado del proveedor
   config        jsonb NOT NULL DEFAULT '{}',   -- NO secretos (ids, flags, firma, horario…)
-  default_team_id uuid,                        -- enrutamiento por defecto (F3); FK a teams se añade en 065
+  default_team_id uuid,                        -- enrutamiento por defecto (F3); FK a teams se añade en 071
   created_by    uuid REFERENCES auth.users(id),
   created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(),
   UNIQUE (type, address)                       -- un número/buzón no se registra dos veces
@@ -72,7 +72,7 @@ ALTER TABLE conversations
   ADD COLUMN channel_id uuid REFERENCES channels(id),
   ADD COLUMN thread_key text NOT NULL DEFAULT '',     -- '' en chat; id raíz del hilo en email
   ADD COLUMN subject text,                            -- email
-  ADD COLUMN team_id uuid,                            -- F3 (FK a teams en 065)
+  ADD COLUMN team_id uuid,                            -- F3 (FK a teams en 071)
   ADD COLUMN first_response_at timestamptz,           -- métrica
   ADD COLUMN priority smallint NOT NULL DEFAULT 0;
 
@@ -111,7 +111,7 @@ ALTER TABLE messages
   ADD COLUMN subject text,
   ADD COLUMN body_html text,                  -- email (sanitizado al renderizar)
   ADD COLUMN metadata jsonb NOT NULL DEFAULT '{}';   -- headers email, waha source, cc/bcc, etc.
--- message_id se conserva como "external_id" (wamid / id WAHA / Message-Id). Se expone como external_id en la API.
+-- La columna message_id NO se renombra (decidido 2026-11-10: el código heredado de wacrm la usa). Guarda el id externo (wamid / id WAHA / Message-Id); la API y los contratos la exponen como external_id.
 ALTER TABLE messages DROP CONSTRAINT messages_content_type_check;
 ALTER TABLE messages ADD CONSTRAINT messages_content_type_check CHECK (content_type IN
   ('text','image','document','audio','video','location','template','interactive','email','note','sticker','system'));
@@ -196,5 +196,5 @@ Funciones y políticas en [06](06-usuarios-equipos-enrutamiento.md).
 - `external_refs` genérico (para Sifinca) se define en la fase de tickets.
 
 ## 8. Migraciones (orden)
-`060_data_api_grants.sql` (hecho en 0.2) → `061_channels` → `062_contact_identities` → `063_conversation_channel` (sin cambiar unicidad) → `064_messages_multichannel` → `065_inbound_events` → `066_private_media` → `067_conversation_uniqueness` → `068_harden_channels` → `069_templates_waba` → `070_transcripts` → `071_teams_access` + RLS → `072_email_raw`. Detalle por hito en [PLAN-MVP §2](../PLAN-MVP.md#2-migraciones-numeración-definitiva-por-orden-de-merge).
+`060_data_api_grants.sql` (hecho en 0.2) → `061_channels` → `062_contact_identities` → `063_conversation_channel` (sin cambiar unicidad) → `064_messages_multichannel` → `065_inbound_events` → `066_private_media` → `067_conversation_uniqueness` → `068_templates_waba` → `069_harden_channels` → `070_transcripts` → `071_teams_access` + RLS → `072_email_raw`. Detalle por hito en [PLAN-MVP §2](../PLAN-MVP.md#2-migraciones-numeración-definitiva-por-orden-de-merge).
 Cada migración idempotente y verificada por el job `migrations` de CI.

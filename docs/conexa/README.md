@@ -15,8 +15,10 @@ Los documentos de `docs/*.md` fuera de esta carpeta son del proyecto original.
 | 05 | [Automatizaciones, flows, IA, broadcasts y API](analisis/05-automatizaciones-flows-ia-broadcasts-api.md) |
 | 06 | [**Mejoras para soportar multicanal** (síntesis)](analisis/06-mejoras-extensibilidad-multicanal.md) |
 
+Las rutas `archivo:línea` de los análisis son las del commit analizado, anterior al monorepo: `src/…` hoy es `apps/web/src/…` y `supabase/…` es `packages/db/supabase/…` (`src/lib/auth/roles.ts` pasó a `packages/shared/src/roles.ts`). Análisis e investigaciones son insumos fechados: donde sus propuestas difieran de las specs o los ADR (p. ej. cola de trabajos, rutas de webhooks, unicidad de conversaciones), mandan las specs y los ADR.
+
 ## Investigación de integraciones
-[WAHA](investigacion/waha.md) · [Mailgun](investigacion/mailgun.md) · [FreePBX](investigacion/freepbx.md) · [osTicket](investigacion/osticket.md) · [Docs y blog de wacrm](investigacion/wacrm-docs-blog.md)
+[WAHA](investigacion/waha.md) · [Mailgun](investigacion/mailgun.md) · [FreePBX](investigacion/freepbx.md) · [osTicket](investigacion/osticket.md) · [Llamadas por WhatsApp Cloud API](investigacion/whatsapp-calling.md) · [Docs y blog de wacrm](investigacion/wacrm-docs-blog.md)
 
 ## Spec del MVP
 | # | Documento | Fase |
@@ -39,8 +41,8 @@ Los documentos de `docs/*.md` fuera de esta carpeta son del proyecto original.
 | ADR | Decisión | Estado |
 |---|---|---|
 | [001](adr/ADR-001-monorepo-web-api.md) | Monorepo `apps/web` (Next) + `apps/api` (Fastify + zod) | Aceptado |
-| [002](adr/ADR-002-canales-y-adaptadores.md) | Canales + adaptadores + pipelines únicos | Propuesto |
+| [002](adr/ADR-002-canales-y-adaptadores.md) | Canales + adaptadores + pipelines únicos | Aceptado |
 | [003](adr/ADR-003-acceso-datos-drizzle.md) | Drizzle ORM sobre migraciones SQL | Aceptado |
 | [004](adr/ADR-004-cola-pg-boss.md) | Trabajos asíncronos con pg-boss | Aceptado |
 | [005](adr/ADR-005-waha.md) | WhatsApp no oficial con WAHA | Propuesto |
-| [006](adr/ADR-006-email-raw-primero.md) | Email: guardar el .eml crudo antes de parsear | Propuesto |
+| [006](adr/ADR-006-email-raw-primero.md) | Email: guardar el .eml crudo antes de parsear | Aceptado |

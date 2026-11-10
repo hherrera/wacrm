@@ -156,7 +156,7 @@ Lo que el blog recomienda pero el producto no trae (según la documentación) es
 | CSAT | No existe | Encuesta al resolver (WhatsApp o email) |
 | Idempotencia de webhooks | No documentada | Unique `(channel_id, external_id)` en `messages` |
 | Rate limit en memoria | `Map` local | Upstash o tabla en Postgres si se despliega en serverless o con varias instancias |
-| Cola de trabajos | No hay (cron por pinger) | Para la descarga de media de WAHA y Mailgun, transcripciones y SLA: usar pgmq/Supabase Queues o una tabla `jobs` + cron |
+| Cola de trabajos | No hay (cron por pinger) | Para la descarga de media de WAHA y Mailgun, transcripciones y SLA: usar pgmq/Supabase Queues o una tabla `jobs` + cron (decidido después: pg-boss, [ADR-004](../adr/ADR-004-cola-pg-boss.md)) |
 | Webhooks salientes firmados | Existen (`X-Wacrm-Signature`) | Reutilizarlos para integraciones |
 | Roles Viewer/Agent/Admin/Owner | Existen | Conservarlos y agregar "Supervisor" (ve todos los equipos y reasigna) si hace falta |
 

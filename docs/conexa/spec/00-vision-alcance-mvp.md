@@ -1,7 +1,7 @@
 # 00 · Conexa — Visión y alcance del MVP
 
 ## Visión
-Conexa es el sistema propio de atención y soporte a clientes de la inmobiliaria: **un único inbox** donde los equipos (arriendos, ventas, cartera, mantenimiento, etc.) atienden WhatsApp oficial, WhatsApp no oficial (QR) y correo, con la base técnica lista para incorporar **tickets** (reemplazo de osTicket, con referencias a entidades de Sifinca) y **llamadas** (FreePBX).
+Conexa es el sistema propio de atención y soporte a clientes de la inmobiliaria: **un único inbox** donde los equipos (arriendos, ventas, cartera, mantenimiento, etc.) atienden WhatsApp oficial, WhatsApp no oficial (QR) y correo, con la base técnica lista para incorporar **tickets** (reemplazo de osTicket, con referencias a entidades de Sifinca) y **llamadas** (primero WhatsApp Calling en la web; FreePBX después).
 
 Base: fork de [wacrm](https://github.com/ArnasDon/wacrm) → `github.com/hherrera/wacrm` (MIT). Análisis del código base en [`../analisis/`](../analisis/).
 
@@ -19,7 +19,7 @@ Validar Conexa **con uso real** por un grupo piloto de usuarios. Por eso el MVP 
 | **F4 — Email (Mailgun)** | Buzones por dominio/dirección, recepción vía Routes, envío con hilo correcto, log de estado de entrega | [07](07-canal-email-mailgun.md) |
 | **Transversal** | Inbox unificado (filtros por canal/equipo/estado, composer por capacidades) | [08](08-inbox-unificado.md) |
 
-Fuera del MVP pero con **arquitectura preparada**: tickets, formularios por tipología, referencias Sifinca, llamadas FreePBX → [09](09-roadmap-tickets-llamadas.md).
+Fuera del MVP pero con **arquitectura preparada**: tickets, formularios por tipología, referencias Sifinca, llamadas (WhatsApp Calling, FreePBX) → [09](09-roadmap-tickets-llamadas.md). De las llamadas por WhatsApp el MVP incluye sólo el **diseño y una prueba de concepto**, no la implementación.
 
 Plan, hitos y criterios de aceptación globales → [10](10-plan-entrega.md).
 

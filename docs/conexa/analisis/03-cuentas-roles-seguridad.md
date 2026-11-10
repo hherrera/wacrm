@@ -89,7 +89,7 @@ CREATE POLICY x_update ON x FOR UPDATE USING (is_account_member(account_id,'agen
 CREATE POLICY x_delete ON x FOR DELETE USING (is_account_member(account_id,'agent'));
 ```
 
-- Clase "settings" (admin+ para escribir): `tags`, `custom_fields`, `whatsapp_config`, `message_templates`, `pipelines`, `ai_configs` (`029:66-80`), `webhook_endpoints` (`028:63-78`), `api_keys` (`026:68-85`).
+- Clase "settings" (admin+ para escribir): `tags`, `custom_fields`, `whatsapp_config`, `message_templates`, `pipelines`, `ai_configs` (`029:66-80`), `webhook_endpoints` (`028:63-78`), `api_keys` (`026:68-84`).
 - Clase "operativa" (agent+): `contacts`, `conversations`, `deals`, `broadcasts`, `automations`, `flows`, `contact_notes`.
 - Solo lectura cliente / escritura service-role: `automation_logs`, `flow_runs`, `automation_pending_executions` (`017:461-480`).
 

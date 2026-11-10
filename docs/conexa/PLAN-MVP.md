@@ -3,7 +3,7 @@
 Plan ejecutable: hitos → PRs con alcance, dependencias, migraciones y criterio de cierre. El _qué_ está en las specs (`spec/00`–`12`); los hitos y la definición de terminado, en [spec/10](spec/10-plan-entrega.md). Este documento fija el **orden de trabajo** y se actualiza al cerrar cada PR (columna Estado).
 
 - Rama por hito (`conexa/h0.2-…`); PR contra `hherrera/wacrm` (nunca upstream). `main` siempre desplegable.
-- Tamaños: **S** ≤ 2 días · **M** 3–5 días · **L** 6–10 días. Estimación para 1 desarrollador a tiempo completo con asistencia de IA; se recalibra al cerrar H0.2.
+- Tamaños (días de una persona): **S** ≤ 2 días · **M** 3–5 días · **L** 6–10 días. Equipo: **2 desarrolladores** a tiempo completo con asistencia de IA; el calendario se recalibra al cerrar cada fase.
 - Estados: ✅ hecho · 🔄 en curso · ⏳ pendiente · ⛔ bloqueado (por decisión de negocio).
 
 ## 1. Ruta y calendario
@@ -13,41 +13,53 @@ H0.1 ✅ ─► H0.2 ─┬─► H0.3 ──────────┬─► H
                  └─► H1 ─► H2 ─► H2.5 ┘
 ```
 
-| Hito | Contenido                                                 | Duración estimada | Semanas (acumulado)            |
-| ---- | --------------------------------------------------------- | ----------------- | ------------------------------ |
-| H0.1 | Monorepo + esqueleto backend (etapas 0.1–0.2)             | —                 | ✅ hecho                       |
-| H0.2 | Canales, colas, pipelines, media privada (etapas 0.3–0.4) | 5–6 sem           | 1–6                            |
-| H0.3 | Frontend sin BD directa + endurecimiento (0.5–0.6)        | 4–5 sem           | 7–11 (en paralelo con H1–H2.5) |
-| H1   | WhatsApp Cloud multi-número                               | 2 sem             | 7–8                            |
-| H2   | WAHA (QR)                                                 | 2–3 sem           | 9–11                           |
-| H2.5 | Transcripción de notas de voz                             | 1 sem             | 12                             |
-| H3   | Equipos y visibilidad                                     | 3 sem             | 13–15                          |
-| H4   | Email Mailgun                                             | 3 sem             | 16–18                          |
-| H5   | Inbox unificado, dashboard, despliegue y piloto           | 2–3 sem           | 19–21                          |
+Equipo de **2 desarrolladores** (A y B). El MVP se organiza en **fases de 2 semanas** (≈ 20 días-persona cada una). La carga se calcula con el punto medio de cada talla (S ≈ 2 d, M ≈ 4 d, L ≈ 8 d), no con el mejor caso; lo que sobra en cada fase es margen para revisión, pruebas y la demo.
 
-**Total: ~21 semanas** con el paralelo H0.3 ∥ H1–H2.5. Si solo trabaja una persona, el paralelo se convierte en intercalado y el total sube a **~25 semanas**.
+| Fase | Semanas | Objetivo                                                                        | PRs (A · B)                                             | Entregable / demo                                                                                                                |
+| ---- | ------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | 1–2     | Base de canales y port de WhatsApp Cloud                                        | A: P0, P2, P3 · B: P1, I2–I4, apoyo en P3               | Graph API v25.0 desplegada; migraciones 061–065 con backfill; tests portados verdes en `apps/api`; LISTEN/NOTIFY comprobado (I3) |
+| 2    | 3–4     | Ingesta por la API y la cola                                                    | A: P4, P5 · B: P5 (`status.apply`, proxy), inicio de P6 | Webhook de Meta servido por `apps/api`: entrante y ticks pasan por `inbound.ingest` / `status.apply`                             |
+| 3    | 5–6     | Salida única, media privada y motores — **cierre de H0.2**                      | A: P6, P7, P9 · B: P6, P8                               | Demo de cierre de H0.2 (§3)                                                                                                      |
+| 4    | 7–8     | Inbox por la API y WhatsApp Cloud multi-número                                  | A: P10 · B: P17, P18                                    | Inbox leyendo y escribiendo por `apps/api`; 2 números Cloud con badge de canal                                                   |
+| 5    | 9–10    | Contactos y settings por la API; **cierre de H1**; arranque de WAHA             | A: P11, P12 · B: P19, P20, inicio de P21                | Aceptación de H1; QR de WAHA escaneado y canal `connected`                                                                       |
+| 6    | 11–12   | Resto del frontend por la API; **cierre de H2**                                 | A: P13, P14, P15 · B: P21, P22                          | Sin `.from(` en `apps/web` (salvo lo que retira P16); conversación WAHA ida y vuelta con media                                   |
+| 7    | 13–14   | Endurecimiento (**cierre de H0.3**), transcripción (**H2.5**) y RLS por equipos | A: P16, P24 · B: P23, inicio de P25                     | Nota de voz transcrita; tests de RLS por rol verdes                                                                              |
+| 8    | 15–16   | Equipos completos (**cierre de H3**) y entrada de email                         | A: P26, P27 · B: P25, P28                               | Vistas por equipo y round-robin; correo entrante guardado como `.eml`                                                            |
+| 9    | 17–18   | Email completo (**cierre de H4**)                                               | A: P29 · B: P30, P31                                    | Hilo Gmail ida y vuelta con log de estados                                                                                       |
+| 10   | 19–20   | Inbox unificado, dashboard y producción                                         | A: P32, P34 · B: P33, P34                               | Despliegue en el VPS contra el proyecto Supabase de producción; prueba de carga                                                  |
+| 11   | 21–22   | Piloto (**cierre de H5**) + diseño y PoC de llamadas                            | A y B: P35 (soporte y correcciones) · B: P36            | 2 semanas de operación real; resultados de la PoC de llamadas                                                                    |
+
+**Total: 11 fases = 22 semanas** (20 de desarrollo + 2 de piloto). Hitos por fase: H0.2 = 1–3 · H0.3 = 4–7 · H1 = 4–5 · H2 = 5–6 · H2.5 = 7 · H3 = 7–8 · H4 = 8–9 · H5 = 10–11.
+
+P28 se adelanta a la Fase 8 porque técnicamente sólo necesita H0.2; el cierre de H4 sigue exigiendo H3.
 
 ## 2. Migraciones (numeración definitiva, por orden de merge)
 
-| #   | Archivo                   | Hito / PR  | Contenido                                                                                                                                                                            |
-| --- | ------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 060 | `data_api_grants`         | H0.1 ✅    | Grants de tablas a `authenticated`/`service_role`                                                                                                                                    |
-| 061 | `channels`                | H0.2 · P1  | `channel_type`, `channel_status`, `channels`, `channel_secrets`; backfill 1 canal `whatsapp_cloud` por `whatsapp_config`; vista de compatibilidad                                    |
-| 062 | `contact_identities`      | H0.2 · P1  | `identity_kind`, `contact_identities`, `contact_merge_suggestions`; backfill desde `phone`/`wa_user_id`/`email`; trigger de sincronización de principales; `contacts.phone` nullable |
-| 063 | `conversation_channel`    | H0.2 · P1  | `channel_id`, `thread_key`, `subject`, `team_id`, `first_response_at`, `priority` (nullable) + backfill; `conversation_events`; `conversation_reads`; índice de inbox                |
-| 064 | `messages_multichannel`   | H0.2 · P1  | `account_id`, `channel_id`, `direction`, `subject`, `body_html`, `metadata`, `inbound_event_id` + backfill; nuevos CHECK; `message_attachments`; `message_delivery_events`           |
-| 065 | `inbound_events`          | H0.2 · P1  | `inbound_events` (+ columnas `raw_*` para email)                                                                                                                                     |
-| 066 | `private_media`           | H0.2 · P7  | `chat-media` privado, límite 100 MB, backfill de `message_attachments` desde `messages.media_url`                                                                                    |
-| 067 | `conversation_uniqueness` | H0.2 · P9  | Quita `idx_conversations_account_contact`; único `(channel_id, contact_id, thread_key)`. **Requisito de H1**                                                                         |
-| 068 | `harden_channels`         | H0.3 · P16 | `channel_id` NOT NULL; secretos sólo en `channel_secrets`; se elimina `whatsapp_config` y `UNIQUE(account_id)`                                                                       |
-| 069 | `templates_waba`          | H1 · P17   | `message_templates.waba_id` + backfill; broadcasts con `channel_id`                                                                                                                  |
-| 070 | `transcripts`             | H2.5 · P23 | `media_transcripts`, `transcription_configs`                                                                                                                                         |
-| 071 | `teams_access`            | H3 · P24   | `teams`, `team_members`, `channel_access`, FKs `team_id`; funciones `accessible_channel_ids()`/`my_team_ids()`; nueva RLS de conversaciones y mensajes; trigger de asignación válida |
-| 072 | `email_raw`               | H4 · P28   | Bucket privado `email-raw`; índices de hilo (`messages.external_id` por canal)                                                                                                       |
+| #   | Archivo                   | Hito / PR  | Contenido                                                                                                                                                                                                            |
+| --- | ------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 060 | `data_api_grants`         | H0.1 ✅    | Grants de tablas a `authenticated`/`service_role`                                                                                                                                                                    |
+| 061 | `channels`                | H0.2 · P1  | `channel_type`, `channel_status`, `channels`, `channel_secrets`; backfill 1 canal `whatsapp_cloud` por `whatsapp_config`; vista de compatibilidad                                                                    |
+| 062 | `contact_identities`      | H0.2 · P1  | `identity_kind`, `contact_identities`, `contact_merge_suggestions`; backfill desde `phone`/`wa_user_id`/`email`; trigger de sincronización de principales; `contacts.phone` nullable                                 |
+| 063 | `conversation_channel`    | H0.2 · P1  | `channel_id`, `subject`, `team_id`, `first_response_at` (nullable), `thread_key` (`NOT NULL DEFAULT ''`), `priority` (`NOT NULL DEFAULT 0`) + backfill; `conversation_events`; `conversation_reads`; índice de inbox |
+| 064 | `messages_multichannel`   | H0.2 · P1  | `account_id`, `channel_id`, `direction`, `subject`, `body_html`, `metadata`, `inbound_event_id` (sin FK aún) + backfill; nuevos CHECK; `message_attachments`; `message_delivery_events`                              |
+| 065 | `inbound_events`          | H0.2 · P1  | `inbound_events` (+ columnas `raw_*` para email); FK `messages.inbound_event_id` → `inbound_events`                                                                                                                  |
+| 066 | `private_media`           | H0.2 · P7  | `chat-media` privado, límite 100 MB, backfill de `message_attachments` desde `messages.media_url`                                                                                                                    |
+| 067 | `conversation_uniqueness` | H0.2 · P9  | Quita `idx_conversations_account_contact`; único `(channel_id, contact_id, thread_key)`. **Requisito de H1**                                                                                                         |
+| 068 | `templates_waba`          | H1 · P17   | `message_templates.waba_id` + backfill; broadcasts con `channel_id`                                                                                                                                                  |
+| 069 | `harden_channels`         | H0.3 · P16 | `channel_id` NOT NULL; secretos sólo en `channel_secrets`; se elimina `whatsapp_config` y `UNIQUE(account_id)`                                                                                                       |
+| 070 | `transcripts`             | H2.5 · P23 | `media_transcripts`, `transcription_configs`                                                                                                                                                                         |
+| 071 | `teams_access`            | H3 · P24   | `teams`, `team_members`, `channel_access`, FKs `team_id`; funciones `accessible_channel_ids()`/`my_team_ids()`; nueva RLS de conversaciones y mensajes; trigger de asignación válida                                 |
+| 072 | `email_raw`               | H4 · P28   | Bucket privado `email-raw`; índices de hilo (`messages.message_id` por canal; `external_id` en la API)                                                                                                               |
 
 Reglas: cada migración es idempotente, pasa el job `migrations` de CI y va seguida de `npm run db:pull -w @conexa/db` en el mismo PR. Las tablas nuevas llevan RLS; los grants llegan por los default privileges de 060.
 
 ## 3. Hitos y PRs
+
+### P0 — Graph API v25.0 (Fase 1, PR propio)
+
+| PR                     | Alcance                                                                                                                                                                                                                                                                                                                                                                                                                                    | Tam. | Depende | Estado |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- | ------- | ------ |
+| **P0** Graph API v25.0 | Una sola constante exportada desde `apps/web/src/lib/whatsapp/meta-api.ts` (hoy `v21.0` está duplicada ahí y en `templates/sync/route.ts`) y subirla a `v25.0`. Independiente de P3 y anterior a él: v21.0 deja de funcionar el 2027-01-21. Probar en el número de prueba: texto, media, plantilla, sincronización de plantillas, registro, salud del número y webhooks de estado ([investigación §9](investigacion/whatsapp-calling.md)). | S    | —       | ⏳     |
 
 ### H0.2 — Canales, colas y pipelines (etapas 0.3 + 0.4)
 
@@ -80,7 +92,7 @@ Un PR por módulo, en orden de riesgo. Cada PR: endpoints `apps/api/src/modules/
 | **P13** | Pipelines + broadcasts                                                                                                                                                           | M    | ⏳     |
 | **P14** | Automations / flows (editores) + dashboard                                                                                                                                       | M    | ⏳     |
 | **P15** | Notificaciones / presencia + regla ESLint que prohíbe `.from(`, `.rpc(` y `.storage` en `apps/web`                                                                               | S    | ⏳     |
-| **P16** | Endurecimiento: migración 068, `middleware.ts` → `proxy.ts`, retirar `apps/web/src/app/api/**` restante                                                                          | S    | ⏳     |
+| **P16** | Endurecimiento: migración 069, `middleware.ts` → `proxy.ts`, retirar `apps/web/src/app/api/**` restante                                                                          | S    | ⏳     |
 
 **Cierre:** `grep -r "\.from(" apps/web/src` = 0 (salvo Realtime); E2E del inbox verde.
 
@@ -88,7 +100,7 @@ Un PR por módulo, en orden de riesgo. Cada PR: endpoints `apps/api/src/modules/
 
 | PR      | Alcance                                                                                                                                                                                                               | Tam. | Estado |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ------ |
-| **P17** | CRUD de canales Cloud (`/v1/channels`): verificación, registro y suscripción parametrizados por canal (WC-1); listado con estado, calidad y tier (WC-2); desconectar (WC-8). UI en Settings → Canales. Migración 069. | M    | ⏳     |
+| **P17** | CRUD de canales Cloud (`/v1/channels`): verificación, registro y suscripción parametrizados por canal (WC-1); listado con estado, calidad y tier (WC-2); desconectar (WC-8). UI en Settings → Canales. Migración 068. | M    | ⏳     |
 | **P18** | Plantillas por WABA (WC-5), ventana de 24 h en servidor → `reply_window_closed` (WC-6), selección de canal en conversación saliente (WC-4), badge de canal en el inbox                                                | M    | ⏳     |
 | **P19** | Broadcasts con número emisor; los mensajes de broadcast se registran en `messages` (WC-7). Schedule `channel.health` para Cloud (WC-9)                                                                                | S    | ⏳     |
 
@@ -136,37 +148,47 @@ Un PR por módulo, en orden de riesgo. Cada PR: endpoints `apps/api/src/modules/
 
 ### H5 — Inbox unificado y piloto ([08](spec/08-inbox-unificado.md))
 
-| PR      | Alcance                                                                                                                                                                                                                                                          | Tam. | Estado |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ------ |
-| **P32** | Composer y burbujas guiados sólo por `ChannelCapabilities` (sin `if whatsapp`); panel de contacto con identidades y todas sus conversaciones; conversación saliente eligiendo canal; mensajes `system` en el hilo                                                | M    | ⏳     |
-| **P33** | Dashboard por canal y equipo: volumen, `first_response_at`, tiempos                                                                                                                                                                                              | M    | ⏳     |
-| **P34** | Producción: despliegue en VPS (Caddy, compose con web/api/worker/WAHA), backups, alertas (`/health`, `/health/queues`, canal caído), dashboard de pg-boss tras auth, runbooks por canal en `docs/conexa/runbooks/`, prueba de carga (5.000 conversaciones < 1 s) | M    | ⏳     |
-| **P35** | Piloto: alta de usuarios y equipos reales, capacitación, 2 semanas de operación con revisión semanal de los 5 criterios de éxito de [00](spec/00-vision-alcance-mvp.md)                                                                                          | —    | ⏳     |
+| PR      | Alcance                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Tam. | Estado |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ------ |
+| **P32** | Composer y burbujas guiados sólo por `ChannelCapabilities` (sin `if whatsapp`); panel de contacto con identidades y todas sus conversaciones; conversación saliente eligiendo canal; mensajes `system` en el hilo                                                                                                                                                                                                                                         | M    | ⏳     |
+| **P33** | Dashboard por canal y equipo: volumen, `first_response_at`, tiempos                                                                                                                                                                                                                                                                                                                                                                                       | M    | ⏳     |
+| **P34** | Producción: despliegue en VPS (Caddy, compose con web/api/worker/WAHA), backups, alertas (`/health`, `/health/queues`, canal caído), dashboard de pg-boss tras auth, runbooks por canal en `docs/conexa/runbooks/`, prueba de carga (5.000 conversaciones < 1 s)                                                                                                                                                                                          | M    | ⏳     |
+| **P35** | Piloto: alta de usuarios y equipos reales, capacitación, 2 semanas de operación con revisión semanal de los 5 criterios de éxito de [00](spec/00-vision-alcance-mvp.md)                                                                                                                                                                                                                                                                                   | —    | ⏳     |
+| **P36** | Llamadas por WhatsApp — **sólo diseño y prueba de concepto; no se implementan en el MVP**: activar llamadas en un número de prueba, suscribir el campo `calls` del webhook y aceptar una llamada con WebRTC desde una página desechable; documento de diseño (modelo, endpoints, UI) y resultados en [investigación](investigacion/whatsapp-calling.md) y [09](spec/09-roadmap-tickets-llamadas.md). La migración de `content_type='call'` queda post-MVP | M    | ⏳     |
 
 ## 4. Infraestructura (en paralelo, antes de que se necesite)
 
-| #   | Tarea                                                                                             | Necesaria para           | Estado           |
-| --- | ------------------------------------------------------------------------------------------------- | ------------------------ | ---------------- |
-| I1  | Proyecto Supabase Cloud (`sa-east-1`, Pro): aplicar 001–060, verificar que la web actual funciona | H0.2                     | ⏳ verificar 060 |
-| I2  | VPS (4 vCPU / 8 GB) + DNS `conexa.` / `api.conexa.` + Caddy TLS; compose `web`/`api`/`worker`     | Demo H0.2 (webhook Meta) | ⏳               |
-| I3  | Comprobar LISTEN/NOTIFY por Supavisor en modo sesión (si falla, pg-boss usa polling)              | H0.2                     | ⏳               |
-| I4  | App Meta de desarrollo y número de prueba (sandbox)                                               | P5                       | ⏳               |
-| I5  | Contenedor WAHA y un número de prueba descartable                                                 | H2                       | ⏳               |
-| I6  | Dominio Mailgun verificado (SPF, DKIM, MX o reenvío)                                              | H4                       | ⏳               |
-| I7  | Cuenta del motor de transcripción (o contenedor `speaches`)                                       | H2.5                     | ⏳               |
+| #   | Tarea                                                                                                                                  | Necesaria para           | Estado                                                                                                         |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| I1  | Proyecto Supabase Cloud de **prototipo** (`us-west-2`; puede reemplazarse): 001–060 aplicadas y `verify-schema` OK                     | H0.2                     | ✅ sólo prototipo                                                                                              |
+| I1b | Proyecto Supabase Cloud de **producción** (región por definir; recomendada `sa-east-1`; plan Pro), creado antes de cargar datos reales | P34 (Fase 10)            | ⏳                                                                                                             |
+| I2  | VPS (4 vCPU / 8 GB) + DNS `conexa.` / `api.conexa.` + Caddy TLS; compose `web`/`api`/`worker`                                          | Demo H0.2 (webhook Meta) | ⏳                                                                                                             |
+| I3  | Comprobar LISTEN/NOTIFY por Supavisor en modo sesión de extremo a extremo (si falla, pg-boss usa polling)                              | Fase 1                   | ⏳ sin verificar; sólo consta que el worker arranca en modo sesión (5432) y crea el esquema `pgboss` y el cron |
+| I4  | App Meta de desarrollo y número de prueba (sandbox)                                                                                    | P5                       | ⏳                                                                                                             |
+| I5  | Contenedor WAHA y un número de prueba descartable                                                                                      | H2                       | ⏳                                                                                                             |
+| I6  | Dominio Mailgun verificado (SPF, DKIM, MX o reenvío)                                                                                   | H4                       | ⏳                                                                                                             |
+| I7  | Cuenta del motor de transcripción (o contenedor `speaches`)                                                                            | H2.5                     | ⏳                                                                                                             |
 
 ## 5. Decisiones de negocio y TI (con fecha límite)
 
-| #   | Decisión                                                                                          | Responsable  | Necesaria antes de | Estado      |
-| --- | ------------------------------------------------------------------------------------------------- | ------------ | ------------------ | ----------- |
-| D1  | Supabase Cloud vs self-hosted                                                                     | TI           | —                  | ✅ Cloud    |
-| D2  | Qué números van a Cloud API y cuáles a WAHA; aceptación escrita del riesgo de bloqueo con WAHA    | Negocio + TI | H1 (sem 7)         | ⏳          |
-| D3  | Buzones del piloto; cambio de MX o reenvío; región Mailgun                                        | TI           | H4 (sem 16)        | ⏳          |
-| D4  | Equipos del piloto, sus miembros y canales                                                        | Negocio      | H3 (sem 13)        | ⏳          |
-| D5  | Drizzle                                                                                           | TI           | —                  | ✅ aceptado |
-| D6  | Acceso a Sifinca (API o BD)                                                                       | TI           | Post-MVP (tickets) | ⏳          |
-| D7  | Autorización de tratamiento de datos para transcripción en la nube (Ley 1581) o motor self-hosted | Legal        | H2.5 (sem 12)      | ⏳          |
-| D8  | Usuarios del piloto y fecha de arranque                                                           | Negocio      | H5 (sem 19)        | ⏳          |
+| #   | Decisión                                                                                                                                                               | Responsable  | Necesaria antes de | Estado                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------ | ---------------------- |
+| D1  | Supabase Cloud vs self-hosted                                                                                                                                          | TI           | —                  | ✅ Cloud               |
+| D2  | Qué números van a Cloud API y cuáles a WAHA; aceptación escrita del riesgo de bloqueo con WAHA                                                                         | Negocio + TI | Fase 4 (sem 7)     | ⏳                     |
+| D3  | Buzones del piloto; cambio de MX o reenvío; región Mailgun                                                                                                             | TI           | Fase 8 (sem 15)    | ⏳                     |
+| D4  | Equipos del piloto, sus miembros y canales                                                                                                                             | Negocio      | Fase 7 (sem 13)    | ⏳                     |
+| D5  | Drizzle                                                                                                                                                                | TI           | —                  | ✅ aceptado            |
+| D6  | Acceso a Sifinca (API o BD)                                                                                                                                            | TI           | Post-MVP (tickets) | ⏳                     |
+| D7  | Autorización de tratamiento de datos para transcripción en la nube (Ley 1581) o motor self-hosted                                                                      | Legal        | Fase 7 (sem 13)    | ⏳                     |
+| D8  | Usuarios del piloto y fecha de arranque                                                                                                                                | Negocio      | Fase 11 (sem 21)   | ⏳                     |
+| D9  | Graph API: `v25.0`, una sola constante, en un PR propio (P0) antes de P3                                                                                               | TI           | Fase 1             | ✅ decidido 2026-11-10 |
+| D10 | Envío de email con Mailgun `messages.mime`: MIME propio, `.eml` saliente a Storage antes de enviar y `Message-Id` propio ([ADR-006](adr/ADR-006-email-raw-primero.md)) | TI           | —                  | ✅ decidido 2026-11-10 |
+| D11 | `messages.message_id` no se renombra; la API y los contratos lo exponen como `external_id`                                                                             | TI           | —                  | ✅ decidido 2026-11-10 |
+| D12 | `conversations.priority` es `NOT NULL DEFAULT 0`                                                                                                                       | TI           | —                  | ✅ decidido 2026-11-10 |
+| D13 | WAHA con `WHATSAPP_FILES_LIFETIME=3600` (la `api` copia la media a Storage al recibirla)                                                                               | TI           | —                  | ✅ decidido 2026-11-10 |
+| D14 | Llamadas por WhatsApp: fuera del MVP; sólo diseño y PoC (P36). Migración de `'call'` post-MVP                                                                          | Negocio + TI | —                  | ✅ decidido 2026-11-10 |
+| D15 | Equipo de 2 desarrolladores y fases de 2 semanas (§1)                                                                                                                  | Negocio      | —                  | ✅ decidido 2026-11-10 |
+| D16 | ADR-002 y ADR-006 aceptados; ADR-005 sigue propuesto hasta D2                                                                                                          | TI           | —                  | ✅ decidido 2026-11-10 |
 
 ## 6. Reglas de trabajo en cada PR
 

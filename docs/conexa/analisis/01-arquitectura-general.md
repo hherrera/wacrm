@@ -62,7 +62,7 @@ Supabase Realtime sobre `messages` y `conversations` (publicación `supabase_rea
 - Endpoints cron protegidos por secreto: `/api/automations/cron`, `/api/flows/cron` (esperas, reintentos, programados). Los dispara un cron externo.
 - Leases en DB para broadcasts (`broadcast-delivery-lease.ts`, `delivery_locked_at`).
 
-Para Conexa esto es suficiente en el MVP (WAHA y Mailgun también entregan por webhook), pero la **sincronización periódica** (salud de sesiones WAHA, Events API de Mailgun, CDR de FreePBX) requerirá más endpoints cron o un worker (ver [06](06-mejoras-extensibilidad-multicanal.md)).
+Para Conexa esto es suficiente en el MVP (WAHA y Mailgun también entregan por webhook), pero la **sincronización periódica** (salud de sesiones WAHA, Events API de Mailgun, CDR de FreePBX) requerirá más endpoints cron o un worker (ver [06](06-mejoras-extensibilidad-multicanal.md)). *(Superado: se decidió cola pg-boss con worker propio desde la Fase 0 — [ADR-004](../adr/ADR-004-cola-pg-boss.md).)*
 
 ## 4. Multi-tenancy
 Tabla `accounts`; la membresía vive en `profiles.account_id` + `profiles.account_role` (un usuario pertenece a **una sola** cuenta), roles `owner/admin/agent/viewer` (migración 017). Todas las tablas de negocio tienen `account_id` y RLS con `is_account_member(account_id, rol_minimo)`. `user_id` sobrevive en muchas tablas como "autor/creador" (legado del modelo 1 usuario = 1 tenant). Detalle en [03](03-cuentas-roles-seguridad.md).

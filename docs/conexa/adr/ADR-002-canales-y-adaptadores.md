@@ -1,6 +1,6 @@
 # ADR-002 · Canal como entidad + adaptadores + pipelines únicos
 
-- Estado: **propuesto**
+- Estado: **aceptado** (2026-11-10)
 
 ## Contexto
 wacrm asume un número de WhatsApp por cuenta, una conversación por contacto e identidad por teléfono, y tiene 5 caminos de envío a Meta y el pipeline de ingesta incrustado en la ruta del webhook (ver [análisis 06](../analisis/06-mejoras-extensibilidad-multicanal.md)).

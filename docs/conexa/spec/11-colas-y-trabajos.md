@@ -30,7 +30,7 @@ Hoy (wacrm) no hay cola: el trabajo corre en `after()` dentro del webhook Meta (
 
 - **Mismo código, dos procesos**: `server.ts` (HTTP) y `worker.ts` (consumidores + schedules). El contenedor `worker` se escala con réplicas; los límites por grupo (`groupConcurrency`) son globales entre réplicas.
 - **Conexiones a Supabase Cloud**:
-  - Worker: *Supavisor* en **modo sesión** (puerto 5432 del pooler) — conexión estable, necesaria para LISTEN/NOTIFY. Pool pequeño (≤ 10).
+  - Worker: *Supavisor* en **modo sesión** (puerto 5432 del pooler) — conexión estable, necesaria para LISTEN/NOTIFY. Pool pequeño (≤ 10). Variable `WORKER_DATABASE_URL` (si falta, usa `DATABASE_URL`).
   - API HTTP (Drizzle): pooler en **modo transacción** (6543) con `prepare: false`; `withUser()` usa `SET LOCAL` dentro de la transacción, compatible con ese modo. El `send()` de pg-boss se ejecuta en esa misma transacción.
   - ⚠️ Verificar en el entorno real que LISTEN/NOTIFY funciona por el pooler en modo sesión; si no, pg-boss cae a *polling* (configurable, ~1–2 s), aceptable para el MVP.
 - **Migraciones del esquema `pgboss`**: las gestiona pg-boss (`boss.start()` con `migrate: true` sólo en el worker, o su CLI en el pipeline de deploy). Fuera de `packages/db/supabase/migrations`.
@@ -39,7 +39,7 @@ Hoy (wacrm) no hay cola: el trabajo corre en `after()` dentro del webhook Meta (
 
 1. **Webhook entrante** (Meta, WAHA, Mailgun, luego FreePBX): verificar firma → **una transacción**: `INSERT inbound_events … ON CONFLICT (provider, dedupe_key) DO NOTHING` + si insertó, `send('inbound.ingest', { eventId })` → responder 200. Nada de lógica de negocio en el request. Duplicados del proveedor = no-op.
 2. **Envío saliente** (UI, API pública, automations, flows, IA, broadcasts): **una transacción**: `INSERT messages (status='queued')` + `send('outbound.send', { messageId }, { singletonKey: conversationId, group: { id: channelId } })` → 202 con el mensaje. El worker llama al adaptador del canal y actualiza `status`; la UI se entera por Realtime. Un único camino de salida, ordenado por conversación y con reintentos.
-3. **Idempotencia de handlers**: todo handler debe tolerar re-ejecución (pg-boss garantiza *at-least-once*). Claves: `inbound_events.status`, `messages.external_id`, estados monotónicos.
+3. **Idempotencia de handlers**: todo handler debe tolerar re-ejecución (pg-boss garantiza *at-least-once*). Claves: `inbound_events.status`, `messages.message_id` (`external_id` en la API), estados monotónicos.
 4. **Errores**: lanzar = reintento. Errores permanentes (firma, 4xx del proveedor por destinatario inválido, ventana 24 h cerrada) → marcar resultado y **terminar sin lanzar** (no reintentar lo irrecuperable).
 5. **DLQ**: cada cola crítica tiene `deadLetter`. Un handler de DLQ marca el recurso (`messages.status='failed'`, `inbound_events.status='failed'`) y crea una notificación a admins.
 

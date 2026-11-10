@@ -1,6 +1,6 @@
 # ADR-006 · Email: guardar el correo crudo (.eml) antes de parsear
 
-- Estado: **propuesto** (2026-11-09, a pedido del usuario)
+- Estado: **aceptado** (2026-11-10; propuesto el 2026-11-09 a pedido del usuario)
 - Afecta: [spec 07 — Email](../spec/07-canal-email-mailgun.md), [spec 03 — Modelo de datos](../spec/03-modelo-datos.md), [spec 11 — Colas](../spec/11-colas-y-trabajos.md)
 
 ## Contexto
@@ -64,7 +64,7 @@ ALTER TABLE messages ADD COLUMN inbound_event_id bigint REFERENCES inbound_event
 - Bucket **`email-raw` privado**, sin acceso para `authenticated`; descarga sólo vía API con rol `admin` o con permiso sobre la conversación, y siempre como `Content-Disposition: attachment` (nunca renderizado inline: puede contener HTML/scripts maliciosos).
 - **Retención distinta**: `inbound_events` (fila) se purga a 30 días como estaba previsto **excepto** las de email con `.eml`, cuya fila y archivo se conservan según la política documental (propuesta: 5 años, a validar con legal). Job `maintenance.cleanup` respeta esa regla.
 
-## Saliente: guardar también lo que enviamos (recomendado)
+## Saliente: guardar también lo que enviamos (decidido 2026-11-10)
 Para simetría y control del hilo: construir el MIME nosotros (p. ej. `MailComposer` de nodemailer) y enviarlo con `POST /v3/{domain}/messages.mime`. Ventajas: guardamos el `.eml` exacto enviado en `email-raw` (mismo esquema, `direction=out`) y **fijamos nuestro propio `Message-Id`** antes de enviar, lo que elimina la dependencia de esperar el `id` de respuesta de Mailgun para el hilo. ⚠️ Verificar en pruebas que Mailgun conserva el `Message-Id` del MIME enviado por `messages.mime`.
 
 ## Costos y riesgos

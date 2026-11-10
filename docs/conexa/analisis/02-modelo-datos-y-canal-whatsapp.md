@@ -90,6 +90,6 @@ Entrante: descarga desde Graph (`getMediaUrl`/`downloadMedia`) y espeja en bucke
 
 ## 8. Cambios de esquema mínimos derivados (detalle en la spec)
 1. Nueva tabla `channels` (genérica) y migrar `whatsapp_config` a ser 1:1 con un canal `whatsapp_cloud` (o columnas en `channels.config` cifrado). Quitar `UNIQUE(account_id)`.
-2. `conversations.channel_id NOT NULL` y cambiar unicidad a **una conversación *abierta* por (contacto, canal)** — índice parcial.
+2. `conversations.channel_id NOT NULL` y cambiar unicidad a **una conversación *abierta* por (contacto, canal)** — índice parcial. *(La spec fijó otra cosa: único `(channel_id, contact_id, thread_key)`, la conversación se reabre — [spec 03 §3](../spec/03-modelo-datos.md).)*
 3. `contact_identities (contact_id, kind, value_normalized)` con UNIQUE por cuenta; `contacts.phone` pasa a nullable.
 4. `messages`: `channel_id` (desnormalizado), `direction`, `external_id` (renombrar/alias de `message_id`), `subject`, `body_html`, `metadata jsonb`, `message_attachments`.

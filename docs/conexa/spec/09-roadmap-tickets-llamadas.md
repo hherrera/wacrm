@@ -1,6 +1,6 @@
 # 09 · Fases posteriores: tickets y llamadas (arquitectura preparada)
 
-No se implementan en el MVP. Este documento fija **qué deja listo el MVP** para que entren sin rehacer la base. Referencias: [osticket.md](../investigacion/osticket.md), [freepbx.md](../investigacion/freepbx.md).
+No se implementan en el MVP. Este documento fija **qué deja listo el MVP** para que entren sin rehacer la base. Referencias: [osticket.md](../investigacion/osticket.md), [freepbx.md](../investigacion/freepbx.md), [whatsapp-calling.md](../investigacion/whatsapp-calling.md).
 
 ## A. Tickets / casos (reemplazo de osTicket)
 
@@ -34,6 +34,8 @@ external_refs      (id, account_id, owner_type, owner_id, system, entity_type, e
 Script ETL leyendo la BD MySQL de osTicket (su API REST sólo crea tickets): `ost_ticket`+`ost_ticket__cdata` → `tickets` (`legacy_number`), `ost_thread_entry` (M/R/N) → `messages` en una conversación de canal "histórico osTicket", `ost_help_topic` → `ticket_topics`, `ost_form*` → `ticket_forms`, `ost_department`/`ost_team` → `teams`, adjuntos `ost_file` → Storage. Ejecutable en seco y repetible.
 
 ## B. Llamadas (FreePBX)
+
+> **Alcance (decidido 2026-11-10):** las llamadas **no se implementan en el MVP**. Sí entran el diseño y una prueba de concepto de la Calling API de WhatsApp Cloud: activar llamadas en un número de prueba, recibir el campo `calls` del webhook y aceptar una llamada con WebRTC desde una página desechable ([PLAN-MVP](../PLAN-MVP.md), P36). La migración de `content_type='call'` es post-MVP. Después del MVP, la **etapa 1** será esa Calling API atendida con WebRTC dentro de la web de Conexa ([investigación](../investigacion/whatsapp-calling.md)); la integración SIP/FreePBX descrita abajo se evalúa más tarde.
 
 ### Arquitectura propuesta
 ```
